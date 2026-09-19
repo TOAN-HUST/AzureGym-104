@@ -1,0 +1,3115 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f6cbd" />
+    <title>AzureGym</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f6cbd'/%3E%3Ctext x='16' y='22' font-size='14' font-family='Arial' font-weight='bold' fill='white' text-anchor='middle'%3EAZ%3C/text%3E%3C/svg%3E"
+    />
+    <style>
+      /* ====================
+       Theme tokens
+       ==================== */
+      :root {
+        --bg: #f4f6f8;
+        --card: #ffffff;
+        --text: #1b1f24;
+        --muted: #5f6b7a;
+        --border: #dde2e8;
+        --primary: #0f6cbd;
+        --primary-soft: #e6f0fa;
+        --ok: #1a7f37;
+        --ok-bg: #e7f5ea;
+        --bad: #c62828;
+        --bad-bg: #fdecec;
+        --fav: #d79b00;
+        --warn: #b26a00;
+        --warn-bg: #fff4e0;
+        --track: #e3e7ec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111418;
+          --card: #1b2027;
+          --text: #e8ebef;
+          --muted: #9aa5b1;
+          --border: #2e3640;
+          --primary: #4f9be8;
+          --primary-soft: #1d2f44;
+          --ok: #4cc26b;
+          --ok-bg: #16301f;
+          --bad: #f0706a;
+          --bad-bg: #3a1c1c;
+          --fav: #f2c14e;
+          --warn: #f0b44c;
+          --warn-bg: #3a2c12;
+          --track: #2a313a;
+        }
+      }
+
+      /* ====================
+       Base
+       ==================== */
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          17px/1.55 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          "Hiragino Sans",
+          "Yu Gothic UI",
+          Meiryo,
+          "Noto Sans JP",
+          sans-serif;
+        overflow-wrap: anywhere;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .app {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+      }
+      h1 {
+        font-size: 1.45rem;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1.05rem;
+        margin: 0 0 12px;
+      }
+      h3 {
+        font-size: 0.95rem;
+        margin: 0 0 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--muted);
+      }
+      p {
+        margin: 0 0 8px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: 0.88rem;
+      }
+      .pre {
+        white-space: pre-line;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        margin: 12px 0;
+      }
+
+      /* ====================
+       Buttons & inputs
+       ==================== */
+      .btn {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        font: inherit;
+        font-weight: 600;
+        min-height: 48px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .btn-danger {
+        background: var(--bad);
+        border-color: var(--bad);
+        color: #fff;
+      }
+      .btn-danger-outline {
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .btn-block {
+        display: block;
+        width: 100%;
+      }
+
+      .btn-ok {
+        background: var(--ok-bg);
+        border: 2px solid var(--ok);
+        color: var(--ok);
+      }
+      .btn-warn {
+        background: var(--warn-bg);
+        border: 2px solid var(--warn);
+        color: var(--warn);
+      }
+
+      /* Hàng lựa chọn dạng checkbox / radio, đủ lớn để bấm bằng ngón tay */
+      .option-list {
+        display: grid;
+        gap: 8px;
+      }
+      .option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 52px;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .option.checked {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+      }
+      .option-all {
+        border-style: dashed;
+      }
+      .option input {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        margin: 0;
+        accent-color: var(--primary);
+      }
+      .option-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .option-label {
+        display: block;
+        font-weight: 600;
+      }
+      .option-hint {
+        display: block;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .option-count {
+        flex: none;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .review-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .review-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        text-align: left;
+      }
+      .review-count {
+        color: var(--muted);
+      }
+      .start-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+        background: var(--bg);
+      }
+
+      .switch-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 48px;
+        margin-bottom: 12px;
+        cursor: pointer;
+      }
+      .switch-row input {
+        width: 22px;
+        height: 22px;
+        accent-color: var(--primary);
+      }
+
+      /* ====================
+       Home
+       ==================== */
+      .app-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 0;
+      }
+      .progress-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 8px;
+      }
+      .bar {
+        display: flex;
+        height: 12px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--track);
+      }
+      .bar-learned {
+        background: var(--ok);
+      }
+      .bar-unsure {
+        background: var(--warn);
+      }
+      .bar-wrong {
+        background: var(--bad);
+      }
+      .bar-legend {
+        display: flex;
+        gap: 14px;
+        margin-top: 6px;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .bar-legend i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        margin-right: 4px;
+        vertical-align: -1px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .stat {
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 8px 10px;
+        text-align: center;
+      }
+      .stat b {
+        display: block;
+        font-size: 1.25rem;
+        line-height: 1.3;
+      }
+      .stat span {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .stat.ok b {
+        color: var(--ok);
+      }
+      .stat.bad b {
+        color: var(--bad);
+      }
+      .stat.fav b {
+        color: var(--fav);
+      }
+      .stat.warn b {
+        color: var(--warn);
+      }
+
+      .resume {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+      }
+      .resume p {
+        margin-bottom: 10px;
+      }
+
+      .warning {
+        border-color: var(--bad);
+        background: var(--bad-bg);
+        font-size: 0.9rem;
+      }
+      .warning ul {
+        margin: 6px 0 0;
+        padding-left: 20px;
+      }
+
+      /* ====================
+       Quiz
+       ==================== */
+      .quiz-top {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        background: var(--bg);
+      }
+      .icon-btn {
+        flex: none;
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .icon-btn.fav-on {
+        color: var(--fav);
+        border-color: var(--fav);
+      }
+      .quiz-title {
+        flex: 1;
+        text-align: center;
+        font-weight: 700;
+      }
+      .quiz-title small {
+        display: block;
+        font-weight: 400;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .thin-bar {
+        height: 4px;
+        border-radius: 999px;
+        background: var(--track);
+        overflow: hidden;
+      }
+      .thin-bar div {
+        height: 100%;
+        background: var(--primary);
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 14px 0 10px;
+      }
+      .pill {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .pill.learned {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .pill.wrong {
+        color: var(--bad);
+        border-color: var(--bad);
+      }
+      .pill.unsure {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .tally {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        margin-top: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .tally .ok {
+        color: var(--ok);
+      }
+      .tally .warn {
+        color: var(--warn);
+      }
+      .tally .bad {
+        color: var(--bad);
+      }
+      .pill.multi {
+        color: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+      }
+      .pill.level {
+        color: var(--fav);
+        border-color: var(--fav);
+      }
+
+      .q-image {
+        margin: 0 0 12px;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fff; /* ảnh chụp màn hình thường nền trắng, giữ dễ đọc ở dark mode */
+      }
+      .q-image img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+      }
+      .q-image.broken {
+        background: var(--bad-bg);
+        border-color: var(--bad);
+        color: var(--bad);
+        font-size: 0.88rem;
+      }
+      .q-image.broken img {
+        display: none;
+      }
+      .q-image.broken::after {
+        content: "⚠️ Không tải được ảnh (sai đường dẫn hoặc đang offline)";
+      }
+      .q-text {
+        font-size: 1.05rem;
+        white-space: pre-line;
+        margin-bottom: 12px;
+      }
+
+      .vi-box {
+        margin: 0 0 16px;
+        padding: 0 14px;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        background: var(--card);
+      }
+      .vi-box.open {
+        padding-bottom: 12px;
+      }
+      .vi-toggle {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 44px;
+        padding: 0;
+        border: 0;
+        background: none;
+        font: inherit;
+        color: var(--primary);
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .choice-vi {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.88rem;
+        color: var(--muted);
+        white-space: pre-line;
+      }
+
+      .part {
+        margin-bottom: 14px;
+      }
+      .part-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0 8px;
+        font-weight: 700;
+      }
+
+      .choice {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+        margin: 0 0 10px;
+        padding: 12px 14px;
+        text-align: left;
+        font: inherit;
+        color: var(--text);
+        background: var(--card);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      .choice[aria-disabled="true"] {
+        cursor: default;
+      }
+      .choice .letter {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid var(--muted);
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+      .choice.multi .letter {
+        border-radius: 7px;
+      }
+      .choice .choice-body {
+        padding-top: 2px;
+      }
+      .choice .choice-text {
+        white-space: pre-line;
+      }
+      .choice.selected {
+        border-color: var(--primary);
+        background: var(--primary-soft);
+      }
+      .choice.selected .letter {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .choice.correct {
+        border-color: var(--ok);
+        background: var(--ok-bg);
+      }
+      .choice.correct .letter {
+        background: var(--ok);
+        border-color: var(--ok);
+        color: #fff;
+      }
+      .choice.incorrect {
+        border-color: var(--bad);
+        background: var(--bad-bg);
+      }
+      .choice.incorrect .letter {
+        background: var(--bad);
+        border-color: var(--bad);
+        color: #fff;
+      }
+
+      .feedback {
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin: 16px 0 12px;
+        border: 1px solid;
+      }
+      .feedback.ok {
+        background: var(--ok-bg);
+        border-color: var(--ok);
+      }
+      .feedback.bad {
+        background: var(--bad-bg);
+        border-color: var(--bad);
+      }
+      .feedback-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .feedback ul {
+        margin: 4px 0 0;
+        padding-left: 20px;
+      }
+      .knowledge {
+        border-left: 4px solid var(--primary);
+      }
+
+      .action-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        margin-top: 12px;
+      }
+      .action-bar.rating {
+        grid-template-columns: auto 1fr 1fr;
+      }
+
+      /* ====================
+       Done screen
+       ==================== */
+      .done-score {
+        font-size: 2.4rem;
+        font-weight: 800;
+        text-align: center;
+        margin: 8px 0 0;
+      }
+      .done-sub {
+        text-align: center;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      /* ====================
+       Modal & toast
+       ==================== */
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .modal-box {
+        width: 100%;
+        max-width: 400px;
+        background: var(--card);
+        border-radius: 16px;
+        padding: 20px;
+      }
+      .modal-box h2 {
+        font-size: 1.15rem;
+      }
+      .modal-box p {
+        white-space: pre-line;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(90px + env(safe-area-inset-bottom));
+        transform: translateX(-50%);
+        z-index: 60;
+        max-width: calc(100% - 32px);
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: #222a33;
+        color: #fff;
+        font-size: 0.92rem;
+        text-align: center;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section id="screen-home" class="screen"></section>
+      <section id="screen-quiz" class="screen" hidden></section>
+      <section id="screen-done" class="screen" hidden></section>
+    </main>
+
+    <div id="modal" class="modal" hidden>
+      <div
+        class="modal-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <h2 id="modal-title"></h2>
+        <p id="modal-message"></p>
+        <div class="modal-actions">
+          <button type="button" id="modal-cancel" class="btn">Cancel</button>
+          <button type="button" id="modal-ok" class="btn btn-primary">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+      "use strict";
+
+      // ====================
+      // Question Data
+      // ====================
+      // Thêm câu hỏi mới: copy một object và dán vào cuối mảng.
+      // Văn bản nhiều dòng: dùng dấu backtick `...` rồi dán thẳng vào, không cần \n.
+      //
+      //   id          : số DUY NHẤT, không bao giờ đổi (tiến độ học gắn với id này)
+      //   category    : phần thi, danh sách được lấy tự động. Dùng đúng 5 tên sau:
+      //                 "1. Identity & Governance", "2. Storage", "3. Compute",
+      //                 "4. Networking", "5. Monitoring & Backup"
+      //   level       : độ khó 1 = Cơ bản (lý thuyết), 2 = Tình huống, 3 = Thực chiến (có bẫy)
+      //                 học theo thứ tự: phần 1 → 5, trong mỗi phần từ dễ đến khó
+      //   topic       : chủ đề con, ví dụ "RBAC", "SSPR" (tùy chọn)
+      //   question    : đề bài gốc (原文, tiếng Nhật)
+      //   questionVi  : bản dịch tiếng Việt (tùy chọn, hiện trong ô "Xem tiếng Việt" đang đóng)
+      //   choices     : mảng các lựa chọn
+      //   choicesVi   : bản dịch các lựa chọn (tùy chọn, cùng số phần tử với choices)
+      //   answer      : vị trí đáp án đúng, đếm từ 0 (0 = A, 1 = B, ...)
+      //                 câu nhiều đáp án: dùng mảng, ví dụ [0, 2]
+      //   explanation : phân tích & giải thích (tùy chọn). **chữ đậm** được hỗ trợ
+      //   knowledge   : kiến thức cần nhớ (tùy chọn)
+      //   images      : ảnh minh họa hiện dưới đề bài (tùy chọn), mảng đường dẫn ảnh:
+      //                 ["images/1004.png"]            file ảnh để trong thư mục images/ cạnh index.html
+      //                 ["data:image/png;base64,..."]  ảnh nhúng thẳng vào code, học offline chắc chắn xem được
+      //
+      // Câu có nhiều câu hỏi con (ví dụ chọn cài đặt cho App1 và App2):
+      // thay choices/choicesVi/answer bằng parts, mỗi phần có label riêng.
+      //   parts: [
+      //     { label: "App1", choices: [...], answer: 2 },
+      //     { label: "App2", choices: [...], answer: 2 },
+      //   ]
+      // Câu chỉ được tính là đúng khi làm đúng TẤT CẢ các phần.
+
+      const questions = [
+        {
+          id: 1001,
+          category: "2. Storage",
+          level: 3,
+          topic: "Managed Identity + RBAC",
+          question: `storage1という名前のAzureストレージアカウントをお持ちです。
+            Azure App Service 上に app1 という名前のアプリと、Azure コンテナー インスタンスで実行される App2 という名前のアプリがあります。それぞれのアプリはマネージド ID を使用しています。
+            App1とApp2が今後30日間、storage1からBLOBを読み取ることができるようにする必要があります。
+            各アプリについて、storage1でどのような設定を行うべきですか？`,
+          questionVi: `Bạn có một tài khoản Azure Storage tên là storage1.
+            Bạn có ứng dụng app1 chạy trên Azure App Service và ứng dụng App2 chạy trên Azure Container Instances. Cả hai ứng dụng đều đang sử dụng Managed Identity (Định danh được quản lý).
+            Bạn cần đảm bảo App1 và App2 có thể đọc BLOB từ storage1 trong vòng 30 ngày tới.
+            Đối với mỗi ứng dụng, bạn nên cấu hình thiết lập nào trên storage1?`,
+          parts: [
+            {
+              label: "App1",
+              choices: [
+                "Access keys",
+                "Advanced security",
+                "Access control (IAM)",
+                "Shared access signatures (SAS)",
+              ],
+              answer: 2,
+            },
+            {
+              label: "App2",
+              choices: [
+                "Access keys",
+                "Advanced security",
+                "Access control (IAM)",
+                "Shared access signatures (SAS)",
+              ],
+              answer: 2,
+            },
+          ],
+          explanation: `**1. Từ khóa quan trọng trong đề bài**
+            "マネージド ID を使用しています" (Cả hai ứng dụng đều đang sử dụng Managed Identity): đây chính là từ khóa mấu chốt quyết định!
+            "BLOBを読み取ることができる" (Có thể đọc Blob): yêu cầu cấp quyền đọc (Read).
+            "今後30日間" (Trong 30 ngày tới): thường để gây nhiễu, khiến người làm bài nghĩ tới tính năng có thời hạn như SAS, nhưng với Managed Identity thì không dùng SAS.
+
+            **2. Tại sao đáp án đúng là C. Access control (IAM) cho CẢ HAI ứng dụng?**
+            Managed Identity là một tính năng của Microsoft Entra ID. Khi một ứng dụng (chạy trên App Service hay Azure Container Instances) được bật Managed Identity, nó sẽ có một danh tính (identity) trong hệ thống.
+            Để cấp quyền cho Managed Identity truy cập storage1, cách chuẩn và bảo mật nhất là dùng RBAC thông qua mục Access control (IAM) của Storage Account.
+            Ví dụ: gán vai trò Storage Blob Data Reader cho Managed Identity của App1 và App2 trong trang Access control (IAM) của storage1.
+            Cả App Service và Azure Container Instances đều hỗ trợ Managed Identity, nên cả hai ứng dụng đều dùng cách này.
+
+            **3. Tại sao các lựa chọn khác SAI?**
+            A. Access keys: cho phép truy cập toàn quyền vào Storage Account, phải lưu khóa trong mã nguồn/cấu hình (không an toàn) và không tận dụng Managed Identity đã bật.
+            B. Advanced security (Microsoft Defender for Storage): tính năng giám sát, phát hiện mối đe dọa, không dùng để phân quyền truy cập dữ liệu.
+            D. Shared access signatures (SAS): cấp quyền giới hạn theo thời gian (ví dụ 30 ngày) bằng cách ký với Shared Key hoặc User Delegation Key, không phải cách phân quyền cho Managed Identity. Đề nhấn mạnh "ứng dụng dùng Managed Identity" → đáp án chuẩn Microsoft luôn là RBAC qua Access control (IAM).`,
+          knowledge: `Managed Identity + truy cập Storage → gán RBAC role qua Access control (IAM).
+            Đọc blob: Storage Blob Data Reader. Đọc/ghi blob: Storage Blob Data Contributor.
+            SAS / Access keys: dùng khi client KHÔNG có danh tính Entra ID.
+            Microsoft Defender for Storage: giám sát mối đe dọa, không phân quyền.`,
+        },
+        {
+          id: 4001,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "SSPR",
+          question: `contoso.com という名前の Microsoft Entra テナントがあります。
+            テナントには次のユーザーが含まれています。
+            ・User1: Group1 のメンバー
+            ・User2: Group2 のメンバー
+            ・User3: グローバル管理者 (Global Administrator)。どのグループのメンバーでもない
+            セルフサービス パスワード リセット (SSPR) を次のように構成しました。
+            ・セルフサービス パスワード リセットが有効: 選択済み (Group1)
+            ・リセットに必要な方法の数: 1
+            ・使用可能な方法: モバイル アプリの通知、電子メール、携帯電話
+            すべてのユーザーは、必要な認証方法を登録済みです。
+            SSPR を使用して自分のパスワードをリセットできるユーザーはどれですか？`,
+          questionVi: `Bạn có một tenant Microsoft Entra tên là contoso.com.
+            Tenant có các người dùng sau:
+            • User1: thành viên của Group1
+            • User2: thành viên của Group2
+            • User3: Global Administrator, không thuộc nhóm nào
+            Bạn cấu hình Self-Service Password Reset (SSPR) như sau:
+            • Bật SSPR cho: Selected (chỉ Group1)
+            • Số phương thức cần để reset: 1
+            • Phương thức cho phép: thông báo qua app di động, email, điện thoại di động
+            Tất cả người dùng đã đăng ký đủ phương thức xác thực cần thiết.
+            Những người dùng nào có thể tự reset mật khẩu bằng SSPR?`,
+          choices: [
+            "User1 のみ",
+            "User3 のみ",
+            "User1 と User3 のみ",
+            "User1、User2、User3",
+          ],
+          choicesVi: [
+            "Chỉ User1",
+            "Chỉ User3",
+            "Chỉ User1 và User3",
+            "Cả User1, User2 và User3",
+          ],
+          answer: 2,
+          explanation: `**1. Đề hỏi gì?**
+            SSPR = cho người dùng TỰ đặt lại mật khẩu khi quên, không cần gọi admin.
+            Từ khóa: "選択済み (Group1)" = SSPR chỉ bật cho nhóm Group1.
+
+            **2. Xét từng người**
+            User1: thuộc Group1 → được dùng SSPR ✅
+            User2: thuộc Group2, không nằm trong phạm vi "Selected" → KHÔNG dùng được ❌
+            User3: là Global Administrator. Theo mặc định, Microsoft bật SSPR cho mọi tài khoản có vai trò admin, KHÔNG phụ thuộc cấu hình None/Selected/All → dùng được ✅
+
+            **3. Bẫy của đề**
+            Nhiều người chọn "User1 のみ" vì thấy User3 không thuộc Group1. Nhưng tài khoản admin có chính sách SSPR riêng do Microsoft quản lý, cài đặt "Selected" không ảnh hưởng đến họ.
+            Chính sách riêng này chặt hơn: admin phải xác thực bằng 2 phương thức ("two-gate policy") và không được dùng câu hỏi bảo mật. Đề đã nói mọi người đăng ký đủ phương thức nên User3 reset được.
+
+            → Đáp án: **C. User1 と User3 のみ**`,
+          knowledge: `Phạm vi SSPR: None (tắt) / Selected (một nhóm) / All (mọi người dùng).
+            Tài khoản có vai trò admin: SSPR mặc định bật (không theo cài đặt None/Selected/All), bắt buộc 2 phương thức, không dùng câu hỏi bảo mật.
+            Người dùng phải đăng ký phương thức xác thực trước thì mới reset được.
+            Mẹo nhớ: thấy "Global Administrator" trong câu hỏi SSPR → gần như chắc chắn người đó reset được.`,
+        },
+        {
+          id: 4002,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "RBAC",
+          question: `Sub1 という名前の Azure サブスクリプションがあり、RG1 と RG2 という名前の 2 つのリソース グループが含まれています。
+            User1 には次のロールが割り当てられています。
+            ・Sub1 のスコープ: 閲覧者 (Reader)
+            ・RG1 のスコープ: 共同作成者 (Contributor)
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `Bạn có subscription Sub1, chứa hai resource group RG1 và RG2.
+            User1 được gán các role sau:
+            • Ở phạm vi Sub1: Reader
+            • Ở phạm vi RG1: Contributor
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. User1 có thể xóa một storage account trong RG1.
+            2. User1 có thể xem danh sách resource trong RG2.
+            3. User1 có thể gán role Reader cho User2 trên RG1.`,
+          parts: [
+            {
+              label: "1. User1 は RG1 内のストレージ アカウントを削除できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "2. User1 は RG2 内のリソースの一覧を表示できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "3. User1 は RG1 で User2 に閲覧者ロールを割り当てることができる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+          ],
+          explanation: `**1. Kiến thức nền: quyền được "kế thừa" từ trên xuống**
+            Cấp bậc: Management group → Subscription → Resource group → Resource.
+            Role gán ở cấp cao sẽ tự động có hiệu lực ở mọi cấp bên dưới. Giống như chìa khóa cổng tòa nhà mở được mọi tầng.
+            Khi có nhiều role, quyền được CỘNG DỒN (lấy tổng các quyền).
+
+            **2. Quyền thực tế của User1**
+            Trên RG1: Reader (kế thừa từ Sub1) + Contributor (gán trực tiếp) = Contributor.
+            Trên RG2: chỉ có Reader (kế thừa từ Sub1).
+
+            **3. Xét từng phát biểu**
+            1. Xóa storage account trong RG1 → Contributor được tạo/sửa/xóa mọi resource → **Có**.
+            2. Xem resource trong RG2 → Reader kế thừa từ Sub1 cho phép xem → **Có**.
+            3. Gán role cho người khác → Contributor KHÔNG được quản lý quyền truy cập (Microsoft.Authorization/*/Write bị loại trừ). Chỉ Owner, User Access Administrator hoặc Role Based Access Control Administrator mới gán role được → **Không**.`,
+          knowledge: `Owner = toàn quyền + gán role.
+            Contributor = toàn quyền quản lý resource, NHƯNG không gán role.
+            Reader = chỉ xem.
+            User Access Administrator = chỉ quản lý quyền truy cập (gán role), không quản lý resource.
+            Quyền kế thừa từ trên xuống và cộng dồn giữa các role.`,
+        },
+        {
+          id: 4003,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "RBAC",
+          question: `RG1 という名前のリソース グループがあります。
+            Admin1 という名前のユーザーが、RG1 内のリソースに対するアクセス権を他のユーザーに付与できるようにする必要があります。Admin1 は RG1 内のリソースを作成、変更、削除できてはなりません。
+            最小特権の原則に従う必要があります。
+            RG1 のスコープで Admin1 にどのロールを割り当てるべきですか？`,
+          questionVi: `Bạn có resource group RG1.
+            Bạn cần cho người dùng Admin1 cấp quyền truy cập các resource trong RG1 cho người khác. Admin1 KHÔNG được tạo, sửa hay xóa resource trong RG1.
+            Bạn phải tuân theo nguyên tắc đặc quyền tối thiểu (least privilege).
+            Bạn nên gán role nào cho Admin1 ở phạm vi RG1?`,
+          choices: [
+            "所有者 (Owner)",
+            "共同作成者 (Contributor)",
+            "ユーザー アクセス管理者 (User Access Administrator)",
+            "閲覧者 (Reader)",
+          ],
+          answer: 2,
+          explanation: `**1. Đề yêu cầu 2 điều**
+            ① Được cấp quyền cho người khác ("アクセス権を他のユーザーに付与").
+            ② KHÔNG được tạo/sửa/xóa resource ("作成、変更、削除できてはなりません").
+            Cộng thêm "最小特権" (least privilege) = chọn role ít quyền nhất mà vẫn đủ dùng.
+
+            **2. Xét từng role**
+            A. Owner: làm được ① nhưng cũng tạo/sửa/xóa được resource → vi phạm ② ❌
+            B. Contributor: quản lý resource được nhưng KHÔNG gán role được → không đạt ① ❌
+            C. User Access Administrator: chỉ quản lý quyền truy cập, không đụng được resource → đạt cả ① và ② ✅
+            D. Reader: chỉ xem, không gán role được ❌
+
+            → Đáp án: **C. User Access Administrator**`,
+          knowledge: `Bảng role cơ bản cần thuộc:
+            • Owner: quản lý resource + gán role
+            • Contributor: quản lý resource, không gán role
+            • Reader: chỉ xem
+            • User Access Administrator: chỉ gán role
+            Microsoft có thêm role "Role Based Access Control Administrator": cũng chỉ gán role, và còn giới hạn được role nào/cho ai bằng điều kiện (condition). Nếu gặp trong đáp án thì đây cũng là lựa chọn ít quyền.
+            Mẹo nhớ: "quản lý resource" = Contributor, "quản lý quyền" = User Access Administrator, "cả hai" = Owner.`,
+        },
+        {
+          id: 4004,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "Azure Policy",
+          question: `Sub1 という名前の Azure サブスクリプションには、数百のリソースが既に存在します。
+            すべてのリソースに、所属するリソース グループと同じ値の CostCenter タグが付くようにする必要があります。この要件は、新しいリソースと既存のリソースの両方に適用する必要があります。
+            Sub1 に組み込みポリシー「リソース グループからタグを継承する」(Inherit a tag from the resource group) を割り当てました。このポリシーの効果は Modify です。
+            次に何をすべきですか？`,
+          questionVi: `Subscription Sub1 đã có sẵn hàng trăm resource.
+            Bạn cần mọi resource đều có tag CostCenter với giá trị giống tag của resource group chứa nó. Yêu cầu này áp dụng cho CẢ resource mới lẫn resource đã có.
+            Bạn đã gán policy có sẵn "Inherit a tag from the resource group" cho Sub1. Effect của policy là Modify.
+            Bước tiếp theo bạn nên làm gì?`,
+          choices: [
+            "修復タスクを作成する",
+            "リソース ロックを構成する",
+            "ポリシーの効果を Audit に変更する",
+            "各リソース グループにタグを再適用する",
+          ],
+          choicesVi: [
+            "Tạo remediation task (tác vụ khắc phục)",
+            "Cấu hình resource lock",
+            "Đổi effect của policy thành Audit",
+            "Gắn lại tag cho từng resource group",
+          ],
+          answer: 0,
+          explanation: `**1. Kiến thức nền: tag KHÔNG tự kế thừa**
+            Gắn tag cho resource group thì các resource bên trong KHÔNG tự có tag đó. Muốn tự động phải dùng Azure Policy.
+
+            **2. Policy Modify hoạt động thế nào?**
+            Resource MỚI tạo (hoặc được cập nhật) → policy tự thêm tag ngay lúc tạo ✅
+            Resource ĐÃ CÓ từ trước → policy chỉ đánh dấu "non-compliant" (không tuân thủ), KHÔNG tự sửa ❌
+            Từ khóa "既存のリソース" (resource đã có) chính là điểm mấu chốt.
+
+            **3. Vì sao là remediation task?**
+            Remediation task (修復タスク) = lệnh bảo policy đi "sửa lại" các resource cũ đang non-compliant. Nó chỉ dùng được với effect Modify và DeployIfNotExists.
+
+            **4. Các lựa chọn khác**
+            B. Resource lock: chặn xóa/sửa, không liên quan đến tag ❌
+            C. Audit: chỉ báo cáo, không sửa gì cả → càng không đạt ❌
+            D. Gắn lại tag cho resource group: resource bên trong vẫn không tự nhận tag ❌`,
+          knowledge: `Tag KHÔNG tự kế thừa từ subscription/resource group xuống resource.
+            Deny/Modify/Append chỉ can thiệp khi resource được TẠO hoặc CẬP NHẬT. Resource cũ chỉ bị đánh dấu non-compliant khi quét tuân thủ.
+            Resource cũ → cần remediation task (chỉ cho Modify và DeployIfNotExists).
+            Policy Modify/DeployIfNotExists cần managed identity có quyền (ví dụ Tag Contributor) để sửa resource.`,
+        },
+        {
+          id: 4005,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "Resource lock",
+          question: `RG1 という名前のリソース グループには、次のリソースが含まれています。
+            ・VM1: 停止済み (割り当て解除) の仮想マシン
+            ・storage1: ストレージ アカウント
+            RG1 に読み取り専用 (ReadOnly) ロックを追加しました。
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `Resource group RG1 chứa các resource sau:
+            • VM1: máy ảo đang dừng (deallocated)
+            • storage1: storage account
+            Bạn thêm lock ReadOnly cho RG1.
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. Bạn có thể xem cấu hình của VM1 trên Azure portal.
+            2. Bạn có thể khởi động VM1.
+            3. Bạn có thể liệt kê access key của storage1.`,
+          parts: [
+            {
+              label: "1. Azure portal で VM1 の構成を表示できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "2. VM1 を起動できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+            {
+              label: "3. storage1 のアクセス キーを一覧表示できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+          ],
+          explanation: `**1. Kiến thức nền: 2 loại lock**
+            CanNotDelete (削除): đọc + sửa được, chỉ chặn XÓA.
+            ReadOnly (読み取り専用): chỉ được ĐỌC, chặn cả sửa lẫn xóa.
+            Lock áp dụng cho MỌI người, kể cả Owner, và kế thừa xuống mọi resource trong RG.
+
+            **2. Điểm khó: "đọc" theo nghĩa của Azure**
+            Azure chỉ coi thao tác GET là "đọc". Nhiều thao tác nghe như "xem" hay "bật" nhưng thực chất là lệnh POST (hành động) → bị ReadOnly chặn.
+
+            **3. Xét từng phát biểu**
+            1. Xem cấu hình VM1 → GET → **Có**.
+            2. Khởi động VM1 → lệnh start là POST → bị chặn → **Không**.
+            3. Liệt kê access key → lệnh listKeys là POST → bị chặn → **Không**. Đây là bẫy kinh điển: nghe như "xem" nhưng vẫn bị ReadOnly chặn.`,
+          knowledge: `ReadOnly lock chặn cả start/restart VM và list key của storage account (vì đều là POST).
+            Lock chỉ chặn thao tác quản lý (control plane). Đọc/ghi dữ liệu blob bằng Entra ID (data plane) vẫn chạy bình thường.
+            Muốn xóa resource có lock thì phải gỡ lock trước. Cần quyền Microsoft.Authorization/locks/* (Owner hoặc User Access Administrator).
+            Mẹo nhớ: ReadOnly = "chỉ được nhìn", mọi nút bấm hành động đều bị khóa.`,
+        },
+        {
+          id: 4006,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Management group",
+          question: `会社には、Sub1、Sub2、Sub3 という名前の 3 つの Azure サブスクリプションがあります。今後、さらにサブスクリプションが追加される予定です。
+            すべてのサブスクリプションで、リソースを東日本 (Japan East) と西日本 (Japan West) のリージョンにのみ作成できるようにする必要があります。
+            解決策では、管理作業を最小限に抑える必要があります。
+            何をすべきですか？`,
+          questionVi: `Công ty có 3 subscription: Sub1, Sub2, Sub3. Sắp tới sẽ còn thêm subscription mới.
+            Bạn cần đảm bảo trong MỌI subscription, resource chỉ được tạo ở region Japan East và Japan West.
+            Giải pháp phải giảm thiểu công sức quản trị.
+            Bạn nên làm gì?`,
+          choices: [
+            "各サブスクリプションに Azure Policy を割り当てる",
+            "管理グループを作成してすべてのサブスクリプションを移動し、管理グループに Azure Policy を割り当てる",
+            "各サブスクリプションにリソース ロックを構成する",
+            "各リソース グループにカスタム RBAC ロールを割り当てる",
+          ],
+          choicesVi: [
+            "Gán Azure Policy cho từng subscription",
+            "Tạo management group, chuyển mọi subscription vào đó, rồi gán Azure Policy cho management group",
+            "Cấu hình resource lock cho từng subscription",
+            "Gán custom RBAC role cho từng resource group",
+          ],
+          answer: 1,
+          explanation: `**1. Đề hỏi gì?**
+            "リージョンにのみ作成できる" (chỉ được tạo ở region…) → đây là việc của **Azure Policy** (policy "Allowed locations").
+            "管理作業を最小限" (ít công quản trị nhất) + "さらにサブスクリプションが追加" (sẽ có thêm subscription) → cần gán MỘT lần cho tất cả.
+
+            **2. Management group là gì?**
+            Là "thư mục" chứa nhiều subscription. Policy hoặc role gán ở management group sẽ tự áp dụng cho mọi subscription bên trong, kể cả subscription thêm vào sau này.
+
+            **3. Xét từng lựa chọn**
+            A. Gán policy cho từng subscription: chạy được nhưng mỗi subscription mới lại phải gán thêm → tốn công ❌
+            B. Management group + policy: gán 1 lần, subscription mới chỉ cần đưa vào nhóm ✅
+            C. Resource lock: chỉ chặn xóa/sửa, không giới hạn region ❌
+            D. RBAC: quản lý AI được làm gì, không quản lý resource được tạo Ở ĐÂU ❌`,
+          knowledge: `Cấp bậc: Tenant root group → Management group → Subscription → Resource group → Resource.
+            Policy và RBAC gán ở cấp trên sẽ kế thừa xuống mọi cấp dưới.
+            Mỗi subscription chỉ thuộc MỘT management group tại một thời điểm.
+            Cây management group sâu tối đa 6 cấp (không tính root và subscription).
+            Mẹo nhớ: "nhiều subscription + ít công" → management group.`,
+        },
+        {
+          id: 4007,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Cost management",
+          question: `Sub1 という名前の Azure サブスクリプションの月額予算は 1,000 USD です。
+            コストが予算の 80% に達したときに、次の要件を満たす必要があります。
+            ・財務チームにメールで通知する
+            ・Sub1 内の開発用仮想マシンを自動的に停止 (割り当て解除) する
+            何を構成すべきですか？`,
+          questionVi: `Subscription Sub1 có ngân sách 1.000 USD mỗi tháng.
+            Khi chi phí đạt 80% ngân sách, bạn cần:
+            • Gửi email thông báo cho đội tài chính
+            • Tự động dừng (deallocate) các máy ảo dùng cho môi trường dev trong Sub1
+            Bạn nên cấu hình gì?`,
+          choices: [
+            "Azure Advisor のコストに関する推奨事項",
+            "アクション グループを使用する予算アラート",
+            "コスト分析のカスタム ビュー",
+            "Deny 効果を持つ Azure Policy",
+          ],
+          choicesVi: [
+            "Khuyến nghị về chi phí của Azure Advisor",
+            "Budget alert (cảnh báo ngân sách) dùng action group",
+            "View tùy chỉnh trong Cost analysis",
+            "Azure Policy với effect Deny",
+          ],
+          answer: 1,
+          explanation: `**1. Đề cần 2 việc khi chi phí đạt 80%**
+            ① Gửi email.
+            ② TỰ ĐỘNG dừng VM ("自動的に停止").
+
+            **2. Budget + action group**
+            Budget (予算) trong Cost Management cho đặt ngưỡng cảnh báo (ví dụ 80%). Khi vượt ngưỡng, budget có thể gửi email và gọi một **action group**.
+            Action group có thể chạy Automation runbook, Logic App hoặc Function để dừng VM → đáp ứng ②.
+
+            **3. Bẫy của đề**
+            Budget KHÔNG tự dừng hay chặn resource. Nó chỉ cảnh báo. Muốn tự động làm gì đó thì phải gắn action group.
+
+            **4. Các lựa chọn khác**
+            A. Azure Advisor: đưa ra gợi ý tiết kiệm, không cảnh báo theo ngưỡng, không tự động dừng VM ❌
+            C. Cost analysis: chỉ để xem, phân tích chi phí ❌
+            D. Policy Deny: chặn tạo resource sai quy tắc, không liên quan đến số tiền đã tiêu ❌`,
+          knowledge: `Budget = cảnh báo khi chi phí (thực tế hoặc dự báo) vượt ngưỡng. KHÔNG tự chặn chi tiêu.
+            Budget + action group → tự động hóa (runbook, Logic App, webhook…).
+            Dữ liệu chi phí được cập nhật chậm vài giờ, nên cảnh báo không tức thời.
+            Azure Advisor = gợi ý tối ưu (ví dụ: VM ít dùng thì nên thu nhỏ hoặc tắt).`,
+        },
+        {
+          id: 4008,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "External users",
+          question: `contoso.com という名前の Microsoft Entra テナントと、Sub1 という名前の Azure サブスクリプションがあります。
+            パートナー企業のユーザー user1@fabrikam.com が、Sub1 内の RG1 のリソースを管理できるようにする必要があります。user1 は fabrikam.com の自分の資格情報でサインインする必要があります。
+            最初に何をすべきですか？`,
+          questionVi: `Bạn có tenant Microsoft Entra contoso.com và subscription Sub1.
+            Bạn cần cho người dùng user1@fabrikam.com của công ty đối tác quản lý các resource trong RG1 thuộc Sub1. user1 phải đăng nhập bằng chính tài khoản fabrikam.com của họ.
+            Việc ĐẦU TIÊN bạn nên làm là gì?`,
+          choices: [
+            "contoso.com に user1 という名前の新しいユーザーを作成する",
+            "user1@fabrikam.com をゲスト ユーザーとして招待する",
+            "Microsoft Entra Connect をインストールする",
+            "fabrikam.com をカスタム ドメイン名として contoso.com に追加する",
+          ],
+          choicesVi: [
+            "Tạo người dùng mới tên user1 trong contoso.com",
+            "Mời user1@fabrikam.com làm guest user (người dùng khách)",
+            "Cài Microsoft Entra Connect",
+            "Thêm fabrikam.com làm custom domain cho contoso.com",
+          ],
+          answer: 1,
+          explanation: `**1. Từ khóa**
+            "パートナー企業" (công ty đối tác) + "自分の資格情報でサインイン" (đăng nhập bằng tài khoản của chính họ) → người ngoài tổ chức, không tạo tài khoản mới cho họ.
+
+            **2. Guest user (B2B collaboration)**
+            Bạn MỜI (招待) user1@fabrikam.com vào tenant contoso.com. User này xuất hiện trong tenant dưới dạng Guest nhưng đăng nhập bằng tài khoản fabrikam.com của họ.
+            Sau khi có guest user, bạn gán role (ví dụ Contributor) ở phạm vi RG1 như với người dùng bình thường. Đó là bước thứ hai.
+
+            **3. Các lựa chọn khác**
+            A. Tạo user mới: user1 sẽ phải dùng mật khẩu mới của contoso, trái yêu cầu ❌
+            C. Entra Connect: đồng bộ tài khoản từ Active Directory on-premises CỦA BẠN, không dùng cho đối tác ❌
+            D. Custom domain: tên miền fabrikam.com thuộc công ty khác, bạn không thể xác minh quyền sở hữu ❌`,
+          knowledge: `Người ngoài tổ chức cần truy cập resource → mời làm Guest (B2B collaboration), sau đó gán role.
+            Guest đăng nhập bằng tài khoản của tổ chức họ (hoặc tài khoản Microsoft, Google, mã gửi qua email…).
+            Cài đặt External collaboration settings quyết định ai được mời guest. Mặc định: mọi người trong tổ chức, kể cả guest, đều mời được.
+            Mẹo nhớ: "đối tác + dùng tài khoản của họ" → invite guest.`,
+        },
+        {
+          id: 4009,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Groups",
+          question: `contoso.com という名前の Microsoft Entra テナントには、次の動的メンバーシップ ルールを持つ Group1 という名前のセキュリティ グループがあります。
+            (user.department -eq "Sales")
+            テナントには次のユーザーが含まれています。
+            ・User1: 部署 (department) = Sales
+            ・User2: 部署 (department) = Marketing
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `Tenant Microsoft Entra contoso.com có security group Group1 với dynamic membership rule (quy tắc thành viên động) sau:
+            (user.department -eq "Sales")
+            Tenant có các người dùng:
+            • User1: department = Sales
+            • User2: department = Marketing
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. Bạn có thể thêm thủ công User2 vào Group1.
+            2. Nếu đổi department của User1 thành Marketing, User1 sẽ tự động bị xóa khỏi Group1.
+            3. Dùng dynamic membership group cần license Microsoft Entra ID P1 trở lên.`,
+          parts: [
+            {
+              label: "1. User2 を Group1 に手動で追加できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+            {
+              label: "2. User1 の部署を Marketing に変更すると、User1 は Group1 から自動的に削除される。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "3. 動的メンバーシップ グループを使用するには、Microsoft Entra ID P1 以上のライセンスが必要である。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+          ],
+          explanation: `**1. Kiến thức nền: 2 kiểu thành viên nhóm**
+            Assigned (割り当て済み): admin tự thêm/xóa thành viên bằng tay.
+            Dynamic (動的): Entra ID tự thêm/xóa thành viên theo quy tắc, ví dụ department = Sales.
+
+            **2. Xét từng phát biểu**
+            1. Nhóm dynamic KHÔNG cho thêm thành viên bằng tay. Thành viên chỉ do quy tắc quyết định → **Không**.
+            2. Quy tắc được đánh giá lại liên tục. User1 đổi sang Marketing thì không còn khớp "Sales" → tự động bị loại khỏi nhóm → **Có**.
+            3. Dynamic membership là tính năng cần license Microsoft Entra ID P1 (hoặc P2) → **Có**.
+
+            **3. Bẫy của đề**
+            Nhiều người nghĩ admin thì thêm được ai cũng được. Với nhóm dynamic thì không: muốn User2 vào nhóm, phải sửa department của User2 hoặc sửa quy tắc.`,
+          knowledge: `Nhóm dynamic: thành viên tự động theo thuộc tính (department, jobTitle, country…). Không thêm bằng tay được.
+            Có thể đổi một nhóm từ Assigned sang Dynamic và ngược lại.
+            Cần license Microsoft Entra ID P1 trở lên.
+            Có dynamic group cho user và dynamic group cho device, nhưng một quy tắc không trộn được cả user lẫn device.`,
+        },
+        {
+          id: 4010,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Licenses",
+          question: `contoso.com という名前の Microsoft Entra テナントに、User1 という名前の新しいユーザーを作成しました。
+            User1 に Microsoft 365 E5 ライセンスを割り当てようとしましたが、割り当てが失敗しました。
+            ライセンスを割り当てる前に、User1 のどのプロパティを構成する必要がありますか？`,
+          questionVi: `Bạn tạo người dùng mới User1 trong tenant Microsoft Entra contoso.com.
+            Bạn thử gán license Microsoft 365 E5 cho User1 nhưng thất bại.
+            Bạn cần cấu hình thuộc tính nào của User1 trước khi gán license?`,
+          choices: [
+            "役職 (Job title)",
+            "利用場所 (Usage location)",
+            "部署 (Department)",
+            "認証方法 (Authentication methods)",
+          ],
+          choicesVi: [
+            "Chức danh (Job title)",
+            "Nơi sử dụng (Usage location)",
+            "Phòng ban (Department)",
+            "Phương thức xác thực (Authentication methods)",
+          ],
+          answer: 1,
+          explanation: `**1. Kiến thức nền**
+            Mỗi dịch vụ Microsoft có thể khả dụng hoặc không tùy quốc gia (do luật pháp từng nước). Vì vậy Microsoft cần biết người dùng dùng license ở nước nào.
+            Thông tin này nằm ở thuộc tính **Usage location** (利用場所) của người dùng.
+
+            **2. Vì sao gán license thất bại?**
+            Nếu user chưa có Usage location, Entra ID KHÔNG cho gán license. User1 là tài khoản mới tạo nên thường chưa có giá trị này.
+
+            **3. Các lựa chọn khác**
+            Job title, Department: chỉ là thông tin mô tả, không bắt buộc khi gán license ❌
+            Authentication methods: dùng cho đăng nhập/MFA/SSPR, không liên quan đến license ❌`,
+          knowledge: `Gán license bắt buộc phải có Usage location.
+            Khi gán license qua nhóm (group-based licensing), user chưa có Usage location sẽ nhận location mặc định của tenant.
+            Group-based licensing cần license Microsoft Entra ID P1 (hoặc gói có P1, ví dụ Microsoft 365 E3/E5).
+            Mẹo nhớ: "license thất bại" → kiểm tra Usage location đầu tiên.`,
+        },
+        {
+          id: 4011,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "RBAC",
+          question: `Azure リソースを作成、変更、削除できるが、他のユーザーにアクセス権を付与することはできない組み込みロールはどれですか？`,
+          questionVi: `Role có sẵn (built-in) nào cho phép tạo, sửa, xóa Azure resource nhưng KHÔNG thể cấp quyền truy cập cho người khác?`,
+          choices: [
+            "所有者 (Owner)",
+            "共同作成者 (Contributor)",
+            "閲覧者 (Reader)",
+            "ユーザー アクセス管理者 (User Access Administrator)",
+          ],
+          answer: 1,
+          explanation: `**4 role cơ bản nhất của Azure RBAC**
+            Hãy tưởng tượng resource là một căn nhà:
+            • Owner (所有者) = chủ nhà: sửa nhà được + đưa chìa khóa cho người khác được.
+            • Contributor (共同作成者) = thợ sửa nhà: sửa, xây, đập được, nhưng KHÔNG được đưa chìa khóa cho ai.
+            • Reader (閲覧者) = khách tham quan: chỉ được nhìn.
+            • User Access Administrator (ユーザー アクセス管理者) = người giữ chìa khóa: chỉ đưa chìa khóa, không tự sửa nhà.
+
+            Đề hỏi: tạo/sửa/xóa được nhưng KHÔNG cấp quyền được → **B. Contributor**.`,
+          knowledge: `Owner: quản lý resource + gán role.
+            Contributor: quản lý resource, KHÔNG gán role.
+            Reader: chỉ xem.
+            User Access Administrator: chỉ gán role.
+            4 role này dùng được cho mọi loại resource. Ngoài ra còn các role riêng cho từng dịch vụ, ví dụ Virtual Machine Contributor, Storage Blob Data Reader.`,
+        },
+        {
+          id: 4012,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "Resource lock",
+          question: `リソースの読み取りと変更は許可するが、削除は禁止するリソース ロックの種類はどれですか？`,
+          questionVi: `Loại resource lock nào cho phép đọc và sửa resource, nhưng cấm xóa?`,
+          choices: [
+            "読み取り専用 (ReadOnly)",
+            "削除 (CanNotDelete)",
+            "変更不可 (CanNotModify)",
+            "アクセス拒否 (DenyAccess)",
+          ],
+          choicesVi: [
+            "Chỉ đọc (ReadOnly)",
+            "Không cho xóa (CanNotDelete)",
+            "Không cho sửa (CanNotModify)",
+            "Từ chối truy cập (DenyAccess)",
+          ],
+          answer: 1,
+          explanation: `**Azure chỉ có ĐÚNG 2 loại lock**
+            • CanNotDelete (trên portal hiển thị là "削除" / Delete): đọc được, sửa được, chỉ KHÔNG xóa được.
+            • ReadOnly (読み取り専用): chỉ đọc được, không sửa, không xóa.
+
+            C (CanNotModify) và D (DenyAccess) là tên bịa ra để gây nhiễu, Azure không có loại lock này.
+            → Đáp án: **B. CanNotDelete**`,
+          knowledge: `2 loại lock: CanNotDelete (chặn xóa) và ReadOnly (chặn sửa + xóa).
+            Lock áp dụng cho MỌI người, kể cả Owner.
+            Lock ở cấp cao hơn (subscription, resource group) được kế thừa xuống mọi resource bên dưới.
+            Mẹo nhớ: tên lock nói đúng cái nó chặn. "Can Not Delete" = không xóa được.`,
+        },
+        {
+          id: 4013,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "Management group",
+          question: `Azure のリソース階層を、上位から下位の順に正しく並べたものはどれですか？`,
+          questionVi: `Thứ tự phân cấp resource trong Azure, từ cấp cao xuống cấp thấp, là thứ tự nào?`,
+          choices: [
+            "管理グループ → サブスクリプション → リソース グループ → リソース",
+            "サブスクリプション → 管理グループ → リソース グループ → リソース",
+            "リソース グループ → サブスクリプション → 管理グループ → リソース",
+            "管理グループ → リソース グループ → サブスクリプション → リソース",
+          ],
+          choicesVi: [
+            "Management group → Subscription → Resource group → Resource",
+            "Subscription → Management group → Resource group → Resource",
+            "Resource group → Subscription → Management group → Resource",
+            "Management group → Resource group → Subscription → Resource",
+          ],
+          answer: 0,
+          explanation: `**Hình dung như một công ty**
+            • Management group (管理グループ) = tập đoàn: gom nhiều subscription lại.
+            • Subscription (サブスクリプション) = công ty con: đơn vị tính tiền (hóa đơn đi theo subscription).
+            • Resource group (リソース グループ) = phòng ban: gom các resource liên quan.
+            • Resource (リソース) = nhân viên: VM, storage account, VNet…
+
+            Trên cùng còn có "Tenant root group", là management group gốc do Azure tự tạo.
+            → Đáp án: **A**`,
+          knowledge: `Tenant root group → Management group → Subscription → Resource group → Resource.
+            Policy, RBAC và lock gán ở cấp trên đều kế thừa xuống cấp dưới.
+            Một resource chỉ thuộc 1 resource group. Một resource group chỉ thuộc 1 subscription.
+            Mẹo nhớ: "M-S-R-R" (Management, Subscription, Resource group, Resource).`,
+        },
+        {
+          id: 4014,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "Azure Policy",
+          question: `組織の標準に準拠させるために、リソースのプロパティ (例: 使用できる VM サイズやリージョン) に規則を適用するサービスはどれですか？`,
+          questionVi: `Dịch vụ nào áp đặt quy tắc lên thuộc tính của resource (ví dụ: kích thước VM hay region được phép dùng) để đảm bảo tuân thủ tiêu chuẩn của tổ chức?`,
+          choices: [
+            "Azure ロールベースのアクセス制御 (RBAC)",
+            "Azure Policy",
+            "リソース ロック",
+            "Azure Advisor",
+          ],
+          choicesVi: [
+            "Azure role-based access control (RBAC)",
+            "Azure Policy",
+            "Resource lock",
+            "Azure Advisor",
+          ],
+          answer: 1,
+          explanation: `**Phân biệt 2 khái niệm hay bị nhầm nhất**
+            • RBAC: quản lý **AI** được làm **GÌ** (người dùng có quyền tạo VM không?).
+            • Azure Policy: quản lý resource phải **NHƯ THẾ NÀO** (VM tạo ra có đúng kích thước, đúng region không?).
+
+            Ví dụ: User1 có quyền Contributor (RBAC cho phép tạo VM), nhưng Policy chỉ cho size B2s → User1 tạo VM size D8s sẽ bị chặn.
+
+            Các lựa chọn khác:
+            • Resource lock: chống xóa/sửa nhầm, không kiểm tra thuộc tính.
+            • Azure Advisor: chỉ đưa ra lời khuyên, không bắt buộc gì.
+            → Đáp án: **B. Azure Policy**`,
+          knowledge: `RBAC = AI làm được GÌ. Policy = resource phải NHƯ THẾ NÀO.
+            Các effect thường gặp của Policy: Deny (chặn), Audit (chỉ ghi nhận), Modify (tự sửa), Append (thêm thuộc tính), DeployIfNotExists (tự triển khai thêm).
+            Policy có sẵn hay gặp: Allowed locations, Allowed virtual machine size SKUs, Require a tag on resources.`,
+        },
+        {
+          id: 4015,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "Tags",
+          question: `Azure のタグに関する次の記述のうち、正しいものはどれですか？`,
+          questionVi: `Phát biểu nào sau đây về tag trong Azure là đúng?`,
+          choices: [
+            "リソース グループに付けたタグは、その中のリソースに自動的に継承される",
+            "タグを使用すると、リソースへのアクセスを拒否できる",
+            "リソース グループに付けたタグは、その中のリソースに自動的には継承されない",
+            "1 つのリソースに付けられるタグは 1 つだけである",
+          ],
+          choicesVi: [
+            "Tag gắn cho resource group sẽ tự động được kế thừa xuống các resource bên trong",
+            "Có thể dùng tag để từ chối truy cập vào resource",
+            "Tag gắn cho resource group KHÔNG tự động được kế thừa xuống các resource bên trong",
+            "Mỗi resource chỉ được gắn 1 tag",
+          ],
+          answer: 2,
+          explanation: `**Tag là gì?**
+            Tag = nhãn dạng "tên : giá trị" để phân loại resource, ví dụ Environment : Production, CostCenter : 1234.
+            Công dụng chính: lọc resource và **chia chi phí** theo phòng ban/dự án trong Cost Management.
+
+            **Xét từng lựa chọn**
+            A. SAI. Đây là bẫy kinh điển: tag KHÔNG tự kế thừa. Muốn kế thừa phải dùng Azure Policy (ví dụ "Inherit a tag from the resource group").
+            B. SAI. Tag chỉ là nhãn, không có chức năng phân quyền. Phân quyền là việc của RBAC.
+            C. ĐÚNG.
+            D. SAI. Mỗi resource được gắn tối đa 50 tag.`,
+          knowledge: `Tag KHÔNG tự kế thừa từ subscription/resource group → dùng Policy nếu muốn kế thừa.
+            Tối đa 50 tag cho mỗi resource/resource group/subscription.
+            Tag giúp lọc chi phí trong Cost Management.
+            Tag không phải công cụ bảo mật.`,
+        },
+        {
+          id: 4016,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "SSPR",
+          question: `管理者ロールを持つユーザーがセルフサービス パスワード リセット (SSPR) を使用する場合、使用できない認証方法はどれですか？`,
+          questionVi: `Khi người dùng có vai trò admin dùng Self-Service Password Reset (SSPR), phương thức xác thực nào KHÔNG được phép dùng?`,
+          choices: [
+            "電子メール",
+            "携帯電話 (SMS または音声通話)",
+            "Microsoft Authenticator アプリの通知",
+            "セキュリティの質問",
+          ],
+          choicesVi: [
+            "Email",
+            "Điện thoại di động (SMS hoặc cuộc gọi)",
+            "Thông báo qua app Microsoft Authenticator",
+            "Câu hỏi bảo mật",
+          ],
+          answer: 3,
+          explanation: `**Chính sách SSPR dành cho admin**
+            Tài khoản admin là mục tiêu tấn công hàng đầu, nên Microsoft áp dụng chính sách SSPR riêng, chặt hơn người dùng thường:
+            • Phải xác thực bằng **2 phương thức** ("two-gate policy").
+            • **KHÔNG được dùng câu hỏi bảo mật**, vì câu trả lời dễ bị đoán hoặc tìm ra (tên trường tiểu học, tên thú cưng…).
+
+            Email, điện thoại, app Authenticator đều dùng được.
+            → Đáp án: **D. セキュリティの質問 (Câu hỏi bảo mật)**`,
+          knowledge: `Người dùng thường: dùng được cả câu hỏi bảo mật (nếu admin cho phép trong cài đặt SSPR).
+            Admin: bắt buộc 2 phương thức, không dùng câu hỏi bảo mật, và SSPR luôn bật cho admin theo mặc định.
+            Phạm vi SSPR: None / Selected (một nhóm) / All.`,
+        },
+        {
+          id: 4017,
+          category: "1. Identity & Governance",
+          level: 1,
+          topic: "Cost management",
+          question: `使用率の低い仮想マシンのサイズ変更やシャットダウンなど、コストを削減するための推奨事項を提供するサービスはどれですか？`,
+          questionVi: `Dịch vụ nào đưa ra khuyến nghị giúp giảm chi phí, ví dụ thu nhỏ hoặc tắt các máy ảo ít được sử dụng?`,
+          choices: [
+            "Azure Advisor",
+            "Azure Monitor",
+            "Azure Policy",
+            "Microsoft Defender for Cloud",
+          ],
+          answer: 0,
+          explanation: `**Azure Advisor = "cố vấn" miễn phí**
+            Advisor tự phân tích resource của bạn và đưa lời khuyên theo 5 nhóm: **Cost (chi phí)**, Security, Reliability, Operational excellence, Performance.
+            Ví dụ lời khuyên về chi phí: "VM này CPU dưới 5% suốt 7 ngày, nên thu nhỏ hoặc tắt".
+
+            Các lựa chọn khác:
+            • Azure Monitor: thu thập metric/log và tạo cảnh báo, không tự đưa lời khuyên tiết kiệm.
+            • Azure Policy: ép buộc quy tắc.
+            • Defender for Cloud: tập trung vào bảo mật.
+            → Đáp án: **A. Azure Advisor**`,
+          knowledge: `Advisor: 5 nhóm khuyến nghị (Cost, Security, Reliability, Operational excellence, Performance).
+            Advisor chỉ KHUYÊN, không tự thay đổi resource.
+            Công cụ quản lý chi phí: Cost analysis (xem chi phí), Budgets (đặt ngân sách + cảnh báo), Advisor (gợi ý tiết kiệm).`,
+        },
+        {
+          id: 4018,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Azure Policy",
+          question: `Sub1 という名前の Azure サブスクリプションに、タグ、許可されるリージョン、許可される VM SKU に関する 5 つのポリシー定義を適用する予定です。
+            5 つのポリシーをまとめて 1 回で割り当て、コンプライアンスの状態を 1 つの単位として確認できるようにする必要があります。
+            何を作成すべきですか？`,
+          questionVi: `Bạn dự định áp dụng 5 policy definition (về tag, region được phép, VM SKU được phép) cho subscription Sub1.
+            Bạn cần gán cả 5 policy trong MỘT lần, và xem trạng thái tuân thủ như MỘT khối.
+            Bạn nên tạo gì?`,
+          choices: [
+            "イニシアチブ定義",
+            "管理グループ",
+            "カスタム RBAC ロール",
+            "リソース ロック",
+          ],
+          choicesVi: [
+            "Initiative definition",
+            "Management group",
+            "Custom RBAC role",
+            "Resource lock",
+          ],
+          answer: 0,
+          explanation: `**Từ khóa: "まとめて" (gom lại) + "1 つの単位" (một khối)**
+
+            **Initiative (イニシアチブ) là gì?**
+            Initiative = một "gói" chứa nhiều policy definition. Gán initiative 1 lần = gán tất cả policy bên trong. Trang Compliance hiển thị kết quả chung của cả gói.
+            Ví dụ thực tế: Microsoft có sẵn initiative "ISO 27001" chứa hàng trăm policy.
+
+            **Các lựa chọn khác**
+            • Management group: gom SUBSCRIPTION, không gom policy.
+            • Custom RBAC role: về quyền của người dùng.
+            • Resource lock: chống xóa/sửa.
+            → Đáp án: **A. イニシアチブ定義 (Initiative definition)**`,
+          knowledge: `Policy definition = 1 quy tắc. Initiative definition = gói nhiều quy tắc.
+            Assignment = việc gán policy/initiative vào một phạm vi (management group, subscription, resource group).
+            Có thể loại trừ (exclusion) một resource group khỏi assignment.
+            Mẹo nhớ: nhiều policy + gán một lần → Initiative.`,
+        },
+        {
+          id: 4019,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "Azure Policy",
+          question: `Sub1 という名前の Azure サブスクリプションには、Environment タグが付いていないリソースが既に 50 個あります。
+            Sub1 に組み込みポリシー「リソースにタグを必須にする」(Require a tag on resources) を Environment タグを対象として割り当てました。ポリシーの効果は Deny です。
+            既存の 50 個のリソースはどうなりますか？`,
+          questionVi: `Subscription Sub1 đã có sẵn 50 resource chưa gắn tag Environment.
+            Bạn gán policy có sẵn "Require a tag on resources" cho Sub1, áp dụng cho tag Environment. Effect của policy là Deny.
+            Chuyện gì xảy ra với 50 resource đã có?`,
+          choices: [
+            "自動的に削除される",
+            "自動的に Environment タグが追加される",
+            "非準拠としてマークされるが、引き続き動作する",
+            "停止され、タグが追加されるまで使用できなくなる",
+          ],
+          choicesVi: [
+            "Bị xóa tự động",
+            "Được tự động thêm tag Environment",
+            "Bị đánh dấu non-compliant (không tuân thủ) nhưng vẫn chạy bình thường",
+            "Bị dừng và không dùng được cho tới khi gắn tag",
+          ],
+          answer: 2,
+          explanation: `**Policy Deny chỉ "gác cổng" cho resource MỚI**
+            Deny chặn yêu cầu TẠO hoặc SỬA resource không đúng quy tắc. Nó không đụng tới resource đã có sẵn.
+            Với resource cũ, Azure Policy chỉ quét và đánh dấu **non-compliant** (非準拠) trên trang Compliance để bạn biết.
+
+            **Xét từng lựa chọn**
+            A. Policy không bao giờ xóa resource ❌
+            B. Tự thêm tag là việc của effect Modify, không phải Deny ❌
+            C. Đúng ✅
+            D. Policy không dừng resource ❌
+
+            **Lưu ý thêm:** nếu sau này bạn SỬA một resource cũ mà vẫn không thêm tag, thao tác sửa đó sẽ bị Deny chặn.`,
+          knowledge: `Deny: chặn tạo/sửa sai quy tắc. Resource cũ chỉ bị đánh dấu non-compliant.
+            Modify: tự sửa (ví dụ thêm tag). Resource cũ cần remediation task.
+            Audit: chỉ ghi nhận, không chặn gì.
+            Policy KHÔNG bao giờ xóa hay dừng resource.`,
+        },
+        {
+          id: 4020,
+          category: "1. Identity & Governance",
+          level: 2,
+          topic: "RBAC",
+          question: `Operator1 という名前のユーザーが、Sub1 内の仮想マシンを起動および再起動できるようにする必要があります。Operator1 は仮想マシンを作成、削除、またはサイズ変更できてはなりません。
+            最小特権の原則に従う必要があります。
+            何をすべきですか？`,
+          questionVi: `Bạn cần cho người dùng Operator1 khởi động (start) và khởi động lại (restart) các máy ảo trong Sub1. Operator1 KHÔNG được tạo, xóa hay đổi kích thước máy ảo.
+            Bạn phải tuân theo nguyên tắc đặc quyền tối thiểu.
+            Bạn nên làm gì?`,
+          choices: [
+            "Operator1 に仮想マシン共同作成者 (Virtual Machine Contributor) ロールを割り当てる",
+            "Operator1 に仮想マシン ユーザー ログイン (Virtual Machine User Login) ロールを割り当てる",
+            "必要なアクションのみを含むカスタム ロールを作成し、Operator1 に割り当てる",
+            "Operator1 に閲覧者 (Reader) ロールを割り当てる",
+          ],
+          choicesVi: [
+            "Gán role Virtual Machine Contributor cho Operator1",
+            "Gán role Virtual Machine User Login cho Operator1",
+            "Tạo custom role chỉ chứa các thao tác cần thiết rồi gán cho Operator1",
+            "Gán role Reader cho Operator1",
+          ],
+          answer: 2,
+          explanation: `**Khi không có role có sẵn nào vừa khít → tạo custom role**
+
+            **Xét từng lựa chọn**
+            A. Virtual Machine Contributor: quản lý toàn bộ VM, gồm cả tạo, xóa, đổi size → thừa quyền ❌
+            B. Virtual Machine User Login: tên nghe giống, nhưng role này chỉ cho **đăng nhập vào bên trong VM** (bằng tài khoản Entra ID), không cho start/restart VM từ Azure ❌ (bẫy!)
+            C. Custom role chỉ chứa đúng các action cần: đọc VM, start, restart → vừa đủ quyền ✅
+            D. Reader: chỉ xem, không start được ❌
+
+            **Custom role trông như thế nào?**
+            Actions:
+            • Microsoft.Compute/virtualMachines/read
+            • Microsoft.Compute/virtualMachines/start/action
+            • Microsoft.Compute/virtualMachines/restart/action
+            AssignableScopes: /subscriptions/(ID của Sub1)`,
+          knowledge: `Custom role = JSON gồm: Actions (được làm), NotActions (loại trừ), DataActions (thao tác dữ liệu), AssignableScopes (gán được ở đâu).
+            Tạo custom role cần quyền Owner hoặc User Access Administrator.
+            Virtual Machine User Login / Administrator Login: đăng nhập VỀ HỆ ĐIỀU HÀNH của VM, không phải quản lý VM.
+            Mẹo nhớ: "chỉ vài thao tác cụ thể + least privilege" → thường là custom role.`,
+        },
+        {
+          id: 4021,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "Resource lock",
+          question: `Sub1 という名前の Azure サブスクリプションには、RG1 という名前のリソース グループがあり、次のリソースが含まれています。
+            ・VM1: 仮想マシン。VM1 には削除 (CanNotDelete) ロックが設定されている
+            ・storage1: ストレージ アカウント。ロックは設定されていない
+            Admin1 は Sub1 の所有者 (Owner) ロールを持っています。
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `Subscription Sub1 có resource group RG1, chứa các resource sau:
+            • VM1: máy ảo, có lock CanNotDelete
+            • storage1: storage account, không có lock
+            Admin1 có role Owner trên Sub1.
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. Admin1 có thể xóa storage1.
+            2. Admin1 có thể xóa RG1.
+            3. Admin1 có thể xóa VM1 sau khi gỡ lock.`,
+          parts: [
+            {
+              label: "1. Admin1 は storage1 を削除できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "2. Admin1 は RG1 を削除できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+            {
+              label: "3. Admin1 はロックを削除した後、VM1 を削除できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+          ],
+          explanation: `**1. Lock gắn ở đâu thì bảo vệ cái đó (và mọi thứ bên dưới)**
+            Lock nằm ở VM1, KHÔNG nằm ở RG1. Vì vậy storage1 hoàn toàn không bị khóa.
+
+            **2. Xét từng phát biểu**
+            1. storage1 không có lock, Admin1 là Owner → xóa được → **Có**.
+            2. Xóa RG1 = xóa MỌI resource bên trong, kể cả VM1. VM1 đang bị lock CanNotDelete → Azure từ chối cả thao tác xóa RG1 → **Không**.
+            3. Owner có quyền quản lý lock (Microsoft.Authorization/locks/*). Gỡ lock xong thì VM1 là resource bình thường → xóa được → **Có**.
+
+            **3. Bẫy của đề**
+            "Admin1 là Owner" khiến nhiều người nghĩ Owner làm gì cũng được. Lock áp dụng cho CẢ Owner. Khác biệt là Owner có quyền GỠ lock, còn Contributor thì không.`,
+          knowledge: `Lock chặn tất cả mọi người, kể cả Owner.
+            Một resource bên trong có lock CanNotDelete → không xóa được resource group chứa nó.
+            Gỡ lock cần Microsoft.Authorization/locks/* → Owner hoặc User Access Administrator. Contributor KHÔNG gỡ được lock.
+            Lock ở cấp trên kế thừa xuống dưới, lock ở cấp dưới KHÔNG lan lên trên (nhưng vẫn chặn việc xóa cấp trên).`,
+        },
+        {
+          id: 4022,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "RBAC",
+          question: `User1 は Group1 のメンバーです。次のロールの割り当てがあります。
+            ・Group1: Sub1 のスコープで共同作成者 (Contributor)
+            ・User1: RG1 のスコープで閲覧者 (Reader)
+            RG1 は Sub1 内のリソース グループです。
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `User1 là thành viên của Group1. Có các role assignment sau:
+            • Group1: Contributor ở phạm vi Sub1
+            • User1: Reader ở phạm vi RG1
+            RG1 là một resource group nằm trong Sub1.
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. User1 có thể tạo máy ảo trong RG1.
+            2. Nếu xóa User1 khỏi Group1, User1 chỉ còn xem được các resource trong RG1.
+            3. Role Reader gán ở RG1 giới hạn lại quyền Contributor mà User1 kế thừa từ Group1.`,
+          parts: [
+            {
+              label: "1. User1 は RG1 に仮想マシンを作成できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "2. User1 を Group1 から削除すると、User1 は RG1 のリソースの表示のみができる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "3. RG1 での閲覧者ロールの割り当ては、Group1 から継承された共同作成者の権限を制限する。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+          ],
+          explanation: `**1. Quy tắc vàng của RBAC: quyền CỘNG DỒN, không TRỪ đi**
+            Quyền thực tế = tổng tất cả role, gồm role gán cho chính user, role gán cho nhóm chứa user, và role kế thừa từ cấp trên.
+            Gán thêm một role "yếu" (Reader) KHÔNG làm mất quyền của role "mạnh" (Contributor).
+
+            **2. Quyền của User1 trên RG1**
+            Contributor (qua Group1, kế thừa từ Sub1) + Reader (gán trực tiếp) = **Contributor**.
+
+            **3. Xét từng phát biểu**
+            1. Có quyền Contributor → tạo VM được → **Có**.
+            2. Ra khỏi Group1 thì mất Contributor, chỉ còn Reader ở RG1 → chỉ xem → **Có**.
+            3. Reader không "giới hạn" được gì cả → **Không**. Đây là bẫy chính của câu.
+
+            Muốn thật sự CHẶN quyền thì phải dùng deny assignment. Deny assignment không tự tạo được như role thường mà do Azure tạo ra (ví dụ qua Deployment Stacks hoặc managed application).`,
+          knowledge: `RBAC là mô hình cộng dồn: quyền = hợp của mọi role assignment (user + group + kế thừa).
+            Role thấp hơn ở cấp dưới KHÔNG ghi đè role cao hơn ở cấp trên.
+            Muốn chặn quyền → deny assignment (được ưu tiên hơn role assignment).
+            Mẹo nhớ: RBAC giống chùm chìa khóa: có thêm chìa thì mở được nhiều cửa hơn, không bao giờ ít đi.`,
+        },
+        {
+          id: 4023,
+          category: "1. Identity & Governance",
+          level: 3,
+          topic: "Azure Policy",
+          question: `Sub1 という名前の Azure サブスクリプションに、組み込みポリシー「許可されている場所」(Allowed locations) を割り当て、許可するリージョンとして東日本 (Japan East) のみを指定しました。
+            ポリシーを割り当てる前から、Sub1 には米国西部 (West US) に VM1 という名前の仮想マシンが存在します。
+            次の各ステートメントについて、正しい場合は「はい」を選択してください。そうでない場合は「いいえ」を選択してください。`,
+          questionVi: `Bạn gán policy có sẵn "Allowed locations" cho subscription Sub1, chỉ cho phép region Japan East.
+            Trước khi gán policy, Sub1 đã có máy ảo VM1 ở region West US.
+            Với mỗi phát biểu, chọn "Có" nếu đúng, "Không" nếu sai:
+            1. Bạn có thể tạo resource group mới RG2 ở West US.
+            2. Bạn có thể tạo storage account ở West US bên trong RG2.
+            3. VM1 bị policy tự động xóa.`,
+          parts: [
+            {
+              label: "1. 米国西部に RG2 という名前の新しいリソース グループを作成できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 0,
+            },
+            {
+              label: "2. RG2 内に、米国西部のストレージ アカウントを作成できる。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+            {
+              label: "3. VM1 はポリシーによって自動的に削除される。",
+              choices: ["はい (Yes)", "いいえ (No)"],
+              choicesVi: ["Có", "Không"],
+              answer: 1,
+            },
+          ],
+          explanation: `**1. Chi tiết ít người biết: "Allowed locations" KHÔNG áp dụng cho resource group**
+            Policy có sẵn "Allowed locations" bỏ qua resource group và các resource dùng region "global".
+            Muốn giới hạn region của resource group phải dùng một policy khác: "Allowed locations for resource groups".
+
+            **2. Xét từng phát biểu**
+            1. Tạo RG2 ở West US → policy không kiểm tra resource group → **Có** (bẫy!).
+            2. Storage account là resource bình thường → West US không nằm trong danh sách cho phép → bị Deny → **Không**. Region của resource group chứa nó (West US) không liên quan: Policy xét region của CHÍNH resource.
+            3. Policy không bao giờ xóa resource. VM1 chỉ bị đánh dấu non-compliant → **Không**.
+
+            **3. Ghi nhớ thêm**
+            Region của resource group chỉ là nơi lưu metadata. Resource bên trong có thể nằm ở region khác. Ví dụ tạo storage account ở Japan East bên trong RG2 (West US) vẫn được.`,
+          knowledge: `"Allowed locations": áp dụng cho resource, BỎ QUA resource group và resource "global".
+            "Allowed locations for resource groups": dùng riêng cho resource group.
+            Resource có thể ở region khác với resource group chứa nó.
+            Policy không xóa, không dừng resource cũ. Chỉ đánh dấu non-compliant.`,
+        },
+      ];
+      // ====================
+      // Constants
+      // ====================
+      const STORAGE_KEY = "az104-study-state";
+      const STATE_VERSION = 2;
+
+      const STATUS = {
+        NOT_STARTED: "not_started",
+        LEARNED: "learned", // trả lời đúng và chắc chắn
+        UNSURE: "unsure", // trả lời đúng nhưng còn mập mờ
+        WRONG: "wrong",
+      };
+      const STATUS_VALUES = Object.values(STATUS);
+      const STATUS_LABELS = {
+        not_started: "Chưa học",
+        learned: "Đã thuộc",
+        unsure: "Mập mờ",
+        wrong: "Làm sai",
+      };
+
+      // Tự đánh giá sau khi trả lời đúng.
+      const CONFIDENCE = { SURE: "sure", UNSURE: "unsure" };
+
+      // Các kiểu học: mỗi kiểu là một điều kiện trên progress của câu hỏi.
+      //   new : mặc định khi bấm "Bắt đầu" (câu chưa làm lần nào)
+      //   all : dùng khi đã học hết câu mới
+      //   còn lại: các nút "Ôn lại" trên trang chủ
+      const STUDY_MODES = {
+        new: {
+          label: "Câu mới",
+          match: (p) => p.status === STATUS.NOT_STARTED,
+        },
+        all: {
+          label: "Tất cả câu",
+          match: () => true,
+        },
+        wrong: {
+          label: "❌ Câu đã sai",
+          match: (p) => p.status === STATUS.WRONG,
+        },
+        unsure: {
+          label: "🤔 Câu mập mờ",
+          match: (p) => p.status === STATUS.UNSURE,
+        },
+        correct: {
+          label: "✅ Câu đã đúng",
+          match: (p) =>
+            p.status === STATUS.LEARNED || p.status === STATUS.UNSURE,
+        },
+        favorite: {
+          label: "⭐ Yêu thích",
+          match: (p) => p.favorite,
+        },
+      };
+      const REVIEW_MODE_KEYS = ["wrong", "unsure", "correct", "favorite"];
+
+      const LETTERS = "ABCDEFGHIJ";
+      const DEFAULT_CATEGORY = "Khác";
+
+      // Độ khó. Câu không ghi level được coi là mức 2.
+      const LEVELS = {
+        1: "★ Cơ bản",
+        2: "★★ Tình huống",
+        3: "★★★ Thực chiến",
+      };
+      const DEFAULT_LEVEL = 2;
+
+      // ====================
+      // Question Validation
+      // ====================
+      const questionById = new Map(); // key: String(id)
+      const validQuestions = [];
+      const questionWarnings = [];
+
+      // part = { label, choices, choicesVi, answer }
+      function getCorrectAnswers(part) {
+        return Array.isArray(part.answer) ? part.answer : [part.answer];
+      }
+
+      // Câu thường được coi như câu có đúng 1 phần (không có label).
+      function getParts(q) {
+        if (Array.isArray(q.parts)) return q.parts;
+        return [
+          {
+            label: "",
+            choices: q.choices,
+            choicesVi: q.choicesVi,
+            answer: q.answer,
+          },
+        ];
+      }
+
+      function getPartLabel(parts, partIndex) {
+        const label = parts[partIndex].label;
+        if (label) return label;
+        return parts.length > 1 ? `Phần ${partIndex + 1}` : "";
+      }
+
+      function getCategory(q) {
+        return q.category || DEFAULT_CATEGORY;
+      }
+
+      function findPartProblem(part) {
+        if (!part || typeof part !== "object") return "không phải object";
+        if (!Array.isArray(part.choices) || part.choices.length < 2)
+          return "choices phải có ít nhất 2 lựa chọn";
+        const answers = getCorrectAnswers(part);
+        const answerIsValid =
+          answers.length > 0 &&
+          answers.every(
+            (a) => Number.isInteger(a) && a >= 0 && a < part.choices.length,
+          );
+        if (!answerIsValid) return "answer không hợp lệ (đếm từ 0)";
+        if (
+          part.choicesVi !== undefined &&
+          (!Array.isArray(part.choicesVi) ||
+            part.choicesVi.length !== part.choices.length)
+        )
+          return "choicesVi phải có cùng số phần tử với choices";
+        return null;
+      }
+
+      // Cho phép viết images: "a.png" (một ảnh) hoặc images: ["a.png", "b.png"].
+      function getImages(q) {
+        if (q.images === undefined || q.images === null) return [];
+        return Array.isArray(q.images) ? q.images : [q.images];
+      }
+
+      function findQuestionProblem(q, seenIds) {
+        if (!q || typeof q !== "object") return "không phải object";
+        if (typeof q.id !== "number" && typeof q.id !== "string")
+          return "thiếu id";
+        if (seenIds.has(String(q.id))) return "trùng id với câu khác";
+        if (!q.question) return "thiếu nội dung question";
+        if (q.level !== undefined && !LEVELS[q.level])
+          return "level phải là 1, 2 hoặc 3";
+        if (!getImages(q).every((src) => typeof src === "string" && src.trim()))
+          return "images phải là mảng đường dẫn ảnh";
+        if (Array.isArray(q.parts) && q.parts.length === 0)
+          return "parts không được rỗng";
+        const parts = getParts(q);
+        for (let i = 0; i < parts.length; i++) {
+          const problem = findPartProblem(parts[i]);
+          if (problem) {
+            const where = parts.length > 1 ? `${getPartLabel(parts, i)}: ` : "";
+            return where + problem;
+          }
+        }
+        return null;
+      }
+
+      // Câu hỏi lỗi sẽ bị bỏ qua và hiển thị cảnh báo trên trang chủ.
+      function prepareQuestions() {
+        const seenIds = new Set();
+        questions.forEach((q, index) => {
+          const problem = findQuestionProblem(q, seenIds);
+          if (problem) {
+            const idText = q && q.id !== undefined ? ` (id ${q.id})` : "";
+            questionWarnings.push(
+              `Phần tử thứ ${index + 1}${idText}: ${problem}`,
+            );
+            return;
+          }
+          seenIds.add(String(q.id));
+          questionById.set(String(q.id), q);
+          validQuestions.push(q);
+        });
+      }
+
+      // ====================
+      // State Management
+      // ====================
+      // state = {
+      //   version,
+      //   progress: { "<questionId>": { status, favorite, attempts, correctCount, unsureCount, wrongCount, lastAnsweredAt } },
+      //   settings: { categories: "all" | ["Storage", ...], shuffle },
+      //   session:  { ids: [...], index, answers: { "<questionId>": { selected: [[...] mỗi phần], correct, confidence } }, label } | null
+      // }
+      let state;
+      // Trạng thái tạm của câu đang làm, reset khi sang câu khác.
+      let selectedChoices = []; // lựa chọn chưa bấm Check, mỗi phần một mảng: [[0], [2]]
+      let viOpen = false; // ô "Xem tiếng Việt" đang mở
+
+      function resetQuestionUi() {
+        selectedChoices = [];
+        viOpen = false;
+      }
+
+      function createDefaultState() {
+        return {
+          version: STATE_VERSION,
+          progress: {},
+          settings: {
+            categories: "all",
+            shuffle: false,
+          },
+          session: null,
+        };
+      }
+
+      function createDefaultProgress() {
+        return {
+          status: STATUS.NOT_STARTED,
+          favorite: false,
+          attempts: 0,
+          correctCount: 0,
+          unsureCount: 0,
+          wrongCount: 0,
+          lastAnsweredAt: null,
+        };
+      }
+
+      // Câu chưa có trong state => not_started.
+      function getProgress(id) {
+        return Object.assign(
+          createDefaultProgress(),
+          state.progress[String(id)],
+        );
+      }
+
+      function updateProgress(id, changes) {
+        state.progress[String(id)] = Object.assign(getProgress(id), changes);
+        saveState();
+      }
+
+      // Quy tắc trạng thái (lần trả lời gần nhất quyết định):
+      //   sai                    => wrong
+      //   đúng                   => learned
+      //   đúng + tự chọn Mập mờ  => unsure (xem recordConfidence)
+      function recordAnswer(id, isCorrect) {
+        const p = getProgress(id);
+        updateProgress(id, {
+          status: isCorrect ? STATUS.LEARNED : STATUS.WRONG,
+          attempts: p.attempts + 1,
+          correctCount: p.correctCount + (isCorrect ? 1 : 0),
+          wrongCount: p.wrongCount + (isCorrect ? 0 : 1),
+          lastAnsweredAt: new Date().toISOString(),
+        });
+      }
+
+      function recordConfidence(id, confidence) {
+        if (confidence !== CONFIDENCE.UNSURE) return;
+        const p = getProgress(id);
+        updateProgress(id, {
+          status: STATUS.UNSURE,
+          unsureCount: p.unsureCount + 1,
+        });
+      }
+
+      function toggleFavorite(id) {
+        updateProgress(id, { favorite: !getProgress(id).favorite });
+      }
+
+      function updateSettings(changes) {
+        Object.assign(state.settings, changes);
+        saveState();
+      }
+
+      function toCount(value) {
+        return Number.isInteger(value) && value >= 0 ? value : 0;
+      }
+
+      function normalizeProgress(p) {
+        const source = p && typeof p === "object" ? p : {};
+        return {
+          status: STATUS_VALUES.includes(source.status)
+            ? source.status
+            : STATUS.NOT_STARTED,
+          favorite: source.favorite === true,
+          attempts: toCount(source.attempts),
+          correctCount: toCount(source.correctCount),
+          unsureCount: toCount(source.unsureCount),
+          wrongCount: toCount(source.wrongCount),
+          lastAnsweredAt:
+            typeof source.lastAnsweredAt === "string"
+              ? source.lastAnsweredAt
+              : null,
+        };
+      }
+
+      function normalizeSettings(raw) {
+        const result = createDefaultState().settings;
+        if (!raw || typeof raw !== "object") return result;
+
+        // Phiên bản 1 dùng "category" (một category).
+        if (Array.isArray(raw.categories)) {
+          result.categories = raw.categories.filter(
+            (c) => typeof c === "string",
+          );
+        } else if (typeof raw.category === "string" && raw.category !== "all") {
+          result.categories = [raw.category];
+        }
+        result.shuffle = raw.shuffle === true;
+        return result;
+      }
+
+      function normalizeSession(s) {
+        if (!s || typeof s !== "object" || !Array.isArray(s.ids)) return null;
+        return {
+          ids: s.ids.map(String),
+          index: toCount(s.index),
+          answers: s.answers && typeof s.answers === "object" ? s.answers : {},
+          label: typeof s.label === "string" ? s.label : "",
+        };
+      }
+
+      // Chuẩn hóa dữ liệu đọc từ localStorage để app không bị lỗi với dữ liệu cũ.
+      function normalizeState(raw) {
+        const result = createDefaultState();
+        if (!raw || typeof raw !== "object") return result;
+
+        if (
+          raw.progress &&
+          typeof raw.progress === "object" &&
+          !Array.isArray(raw.progress)
+        ) {
+          for (const [id, p] of Object.entries(raw.progress)) {
+            result.progress[id] = normalizeProgress(p);
+          }
+        }
+        result.settings = normalizeSettings(raw.settings);
+        result.session = normalizeSession(raw.session);
+        return result;
+      }
+
+      // Bỏ các câu trong phiên học không còn tồn tại (ví dụ đã xóa khỏi questions).
+      function cleanSession() {
+        const s = state.session;
+        if (!s) return;
+        s.ids = s.ids.filter((id) => questionById.has(id));
+        if (s.ids.length === 0) {
+          state.session = null;
+          return;
+        }
+        s.index = Math.min(s.index, s.ids.length);
+      }
+
+      // ====================
+      // LocalStorage
+      // ====================
+      function loadState() {
+        let raw;
+        try {
+          raw = localStorage.getItem(STORAGE_KEY);
+        } catch (err) {
+          console.warn("localStorage không khả dụng", err);
+          return createDefaultState();
+        }
+        if (!raw) return createDefaultState();
+        try {
+          return normalizeState(JSON.parse(raw));
+        } catch (err) {
+          // Dữ liệu hỏng: giữ lại bản sao để có thể cứu, rồi bắt đầu state mới.
+          console.warn("State bị hỏng, đã lưu bản sao", err);
+          try {
+            localStorage.setItem(STORAGE_KEY + "-corrupt", raw);
+          } catch (e) {
+            /* bỏ qua */
+          }
+          return createDefaultState();
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (err) {
+          console.warn("Không lưu được state", err);
+          showToast(
+            "⚠️ Không lưu được tiến độ (trình duyệt chặn localStorage?)",
+          );
+        }
+      }
+
+      // ====================
+      // Question Filtering
+      // ====================
+      function getCategories() {
+        return [...new Set(validQuestions.map(getCategory))].sort((a, b) =>
+          a.localeCompare(b),
+        );
+      }
+
+      // settings.categories = "all" nghĩa là mọi mục, kể cả mục mới thêm sau này.
+      function getSelectedCategories() {
+        const saved = state.settings.categories;
+        const all = getCategories();
+        return saved === "all" ? all : all.filter((c) => saved.includes(c));
+      }
+
+      function setSelectedCategories(list) {
+        const isAll = list.length > 0 && list.length === getCategories().length;
+        updateSettings({ categories: isAll ? "all" : list });
+      }
+
+      function toggleCategory(category) {
+        const selected = getSelectedCategories();
+        setSelectedCategories(
+          selected.includes(category)
+            ? selected.filter((c) => c !== category)
+            : selected.concat(category),
+        );
+      }
+
+      function toggleAllCategories() {
+        const allSelected =
+          getSelectedCategories().length === getCategories().length;
+        updateSettings({ categories: allSelected ? [] : "all" });
+      }
+
+      function questionsInCategories(categories) {
+        return validQuestions.filter((q) =>
+          categories.includes(getCategory(q)),
+        );
+      }
+
+      // Các câu thuộc mục đã chọn và khớp kiểu học (xem STUDY_MODES).
+      function getStudyList(modeKey) {
+        const mode = STUDY_MODES[modeKey];
+        return questionsInCategories(getSelectedCategories()).filter((q) =>
+          mode.match(getProgress(q.id)),
+        );
+      }
+
+      // Thống kê luôn tính lại từ state, không lưu riêng.
+      function computeStats(list) {
+        const stats = {
+          total: list.length,
+          not_started: 0,
+          learned: 0,
+          unsure: 0,
+          wrong: 0,
+          favorite: 0,
+          attempts: 0,
+          correct: 0,
+        };
+        list.forEach((q) => {
+          const p = getProgress(q.id);
+          stats[p.status]++;
+          if (p.favorite) stats.favorite++;
+          stats.attempts += p.attempts;
+          stats.correct += p.correctCount;
+        });
+        stats.accuracy = stats.attempts
+          ? Math.round((stats.correct / stats.attempts) * 100)
+          : null;
+        return stats;
+      }
+
+      function shuffleArray(items) {
+        const copy = items.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      // ====================
+      // Quiz Logic
+      // ====================
+      function startSession(ids, label, startIndex = 0) {
+        if (!ids.length) return;
+        state.session = {
+          ids: ids.map(String),
+          index: startIndex,
+          answers: {},
+          label,
+        };
+        resetQuestionUi();
+        saveState();
+        openQuizScreen();
+      }
+
+      function buildSessionLabel(modeKey) {
+        const selected = getSelectedCategories();
+        const categoryText =
+          selected.length === getCategories().length
+            ? "Tất cả mục"
+            : selected.join(", ");
+        return `${STUDY_MODES[modeKey].label} · ${categoryText}`;
+      }
+
+      function getLevel(q) {
+        return q.level || DEFAULT_LEVEL;
+      }
+
+      // Thứ tự học mặc định: theo phần (tên category), trong mỗi phần từ dễ đến khó.
+      // Cùng phần, cùng độ khó thì giữ thứ tự trong mảng questions.
+      function sortByStudyOrder(list) {
+        return list.slice().sort(
+          (a, b) =>
+            getCategory(a).localeCompare(getCategory(b)) ||
+            getLevel(a) - getLevel(b),
+        );
+      }
+
+      // Lấy toàn bộ câu khớp kiểu học trong các mục đã chọn, không giới hạn số câu.
+      function startStudy(modeKey) {
+        let list = getStudyList(modeKey);
+        list = state.settings.shuffle
+          ? shuffleArray(list)
+          : sortByStudyOrder(list);
+        startSession(
+          list.map((q) => q.id),
+          buildSessionLabel(modeKey),
+        );
+      }
+
+      function currentQuestion() {
+        const s = state.session;
+        return s && s.index < s.ids.length
+          ? questionById.get(s.ids[s.index])
+          : null;
+      }
+
+      function currentAnswer() {
+        const q = currentQuestion();
+        return q ? state.session.answers[String(q.id)] : null;
+      }
+
+      // Đúng nhưng chưa tự đánh giá chắc chắn / mập mờ.
+      function needsRating(answer) {
+        return Boolean(answer && answer.correct && !answer.confidence);
+      }
+
+      function isSameSet(a, b) {
+        return a.length === b.length && a.every((x) => b.includes(x));
+      }
+
+      // Lựa chọn đã lưu, mỗi phần một mảng. Dữ liệu cũ (mảng phẳng) được coi là 1 phần.
+      function getAnswerSelections(answer) {
+        const selected = answer.selected || [];
+        return selected.length && !Array.isArray(selected[0])
+          ? [selected]
+          : selected;
+      }
+
+      function isPartCorrect(part, selection) {
+        return isSameSet(selection || [], getCorrectAnswers(part));
+      }
+
+      function isSelectionComplete(q) {
+        return getParts(q).every((_, i) => (selectedChoices[i] || []).length);
+      }
+
+      function selectChoice(partIndex, index) {
+        const q = currentQuestion();
+        if (!q || currentAnswer()) return;
+        const part = getParts(q)[partIndex];
+        if (!part || index >= part.choices.length) return;
+        const current = selectedChoices[partIndex] || [];
+        if (getCorrectAnswers(part).length > 1) {
+          selectedChoices[partIndex] = current.includes(index)
+            ? current.filter((i) => i !== index)
+            : current.concat(index);
+        } else {
+          selectedChoices[partIndex] = [index];
+        }
+        renderQuiz();
+      }
+
+      function checkAnswer() {
+        const q = currentQuestion();
+        if (!q || currentAnswer() || !isSelectionComplete(q)) return;
+        const parts = getParts(q);
+        const selections = parts.map((_, i) => selectedChoices[i].slice());
+        const isCorrect = parts.every((part, i) =>
+          isPartCorrect(part, selections[i]),
+        );
+        state.session.answers[String(q.id)] = {
+          selected: selections,
+          correct: isCorrect,
+          confidence: null,
+        };
+        recordAnswer(q.id, isCorrect); // cũng lưu luôn session
+        renderQuiz();
+        const feedback = document.getElementById("feedback");
+        if (feedback) feedback.scrollIntoView({ block: "nearest" });
+      }
+
+      // Sang câu tiếp. Câu đúng chưa được đánh giá thì ghi nhận theo confidence (mặc định: chắc chắn).
+      function goNext(confidence = CONFIDENCE.SURE) {
+        const q = currentQuestion();
+        const answer = currentAnswer();
+        if (q && needsRating(answer)) {
+          answer.confidence = confidence;
+          recordConfidence(q.id, confidence);
+        }
+        goToQuestion(state.session.index + 1);
+      }
+
+      function goToQuestion(index) {
+        const s = state.session;
+        if (!s) return;
+        s.index = Math.max(0, Math.min(index, s.ids.length));
+        resetQuestionUi();
+        saveState();
+        route();
+        window.scrollTo(0, 0);
+      }
+
+      // Kết quả một câu trong phiên: "sure" | "unsure" | "wrong" | null (chưa làm).
+      function answerOutcome(answer) {
+        if (!answer) return null;
+        if (!answer.correct) return "wrong";
+        return answer.confidence === CONFIDENCE.UNSURE ? "unsure" : "sure";
+      }
+
+      function getSessionResults() {
+        const s = state.session;
+        const result = { sure: 0, unsure: 0, wrong: 0, reviewIds: [] };
+        s.ids.forEach((id) => {
+          const outcome = answerOutcome(s.answers[id]);
+          if (!outcome) return;
+          result[outcome]++;
+          if (outcome !== "sure") result.reviewIds.push(id);
+        });
+        result.answered = result.sure + result.unsure + result.wrong;
+        return result;
+      }
+
+      function endSession() {
+        state.session = null;
+        resetQuestionUi();
+        saveState();
+      }
+
+      // ====================
+      // Navigation
+      // ====================
+      // Dùng #quiz trên URL để nút Back của điện thoại quay về trang chủ.
+      function openQuizScreen() {
+        if (location.hash === "#quiz") route();
+        else location.hash = "quiz";
+      }
+
+      function goHome() {
+        if (location.hash === "#quiz") history.back();
+        else route();
+      }
+
+      function route() {
+        const s = state.session;
+        let screen = "home";
+        if (location.hash === "#quiz" && s) {
+          screen = s.index >= s.ids.length ? "done" : "quiz";
+        } else if (s && s.index >= s.ids.length) {
+          endSession(); // rời màn hình kết quả => kết thúc phiên
+        }
+        showScreen(screen);
+      }
+
+      function showScreen(name) {
+        for (const key of ["home", "quiz", "done"]) {
+          document.getElementById("screen-" + key).hidden = key !== name;
+        }
+        if (name === "home") renderHome();
+        if (name === "quiz") renderQuiz();
+        if (name === "done") renderDone();
+      }
+
+      // ====================
+      // Rendering
+      // ====================
+      function escapeHtml(value) {
+        return String(value ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+
+      function statHtml(value, label, cls = "") {
+        return `<div class="stat ${cls}"><b>${value}</b><span>${label}</span></div>`;
+      }
+
+      // Một hàng chọn (checkbox/radio). label và hint phải được escape trước khi truyền vào.
+      function optionHtml({
+        input,
+        checked,
+        label,
+        hint = "",
+        count,
+        extraClass = "",
+      }) {
+        return `<label class="option ${checked ? "checked" : ""} ${extraClass}">
+            ${input}
+            <span class="option-main">
+                <span class="option-label">${label}</span>
+                ${hint ? `<span class="option-hint">${hint}</span>` : ""}
+            </span>
+            <span class="option-count">${count}</span>
+        </label>`;
+      }
+
+      function renderWarnings() {
+        if (!questionWarnings.length) return "";
+        return `<div class="card warning">
+        <strong>⚠️ ${questionWarnings.length} câu hỏi bị bỏ qua do dữ liệu lỗi:</strong>
+        <ul>${questionWarnings.map((w) => `<li>${escapeHtml(w)}</li>`).join("")}</ul>
+    </div>`;
+      }
+
+      function renderResumeCard() {
+        const s = state.session;
+        if (!s || s.index >= s.ids.length) return "";
+        return `<div class="card resume">
+        <h2>Đang học dở</h2>
+        <p class="small muted">${escapeHtml(s.label)} · câu ${s.index + 1} / ${s.ids.length}</p>
+        <button type="button" class="btn btn-primary btn-block" data-action="resume">▶ Tiếp tục</button>
+    </div>`;
+      }
+
+      function renderCategoryCard() {
+        const categories = getCategories();
+        const selected = getSelectedCategories();
+        const allChecked =
+          categories.length > 0 && selected.length === categories.length;
+
+        const rows = categories
+          .map((category) => {
+            const stats = computeStats(questionsInCategories([category]));
+            const hintParts = [`Đã thuộc ${stats.learned}/${stats.total}`];
+            if (stats.unsure) hintParts.push(`mập mờ ${stats.unsure}`);
+            if (stats.wrong) hintParts.push(`sai ${stats.wrong}`);
+            const checked = selected.includes(category);
+            return optionHtml({
+              input: `<input type="checkbox" data-category="${escapeHtml(category)}" ${checked ? "checked" : ""}>`,
+              checked,
+              label: escapeHtml(category),
+              hint: hintParts.join(" · "),
+              count: stats.total,
+            });
+          })
+          .join("");
+
+        return `<div class="card">
+        <h2>Bạn muốn ôn mục nào?</h2>
+        <p class="small muted">Có thể chọn nhiều mục.</p>
+        <div class="option-list">
+            ${optionHtml({
+              input: `<input type="checkbox" id="category-all" ${allChecked ? "checked" : ""}>`,
+              checked: allChecked,
+              label: "Tất cả các mục",
+              count: validQuestions.length,
+              extraClass: "option-all",
+            })}
+            ${rows}
+        </div>
+        <label class="switch-row" style="margin:12px 0 0">
+            <input type="checkbox" id="shuffle-toggle" ${state.settings.shuffle ? "checked" : ""}>
+            <span>🔀 Random thứ tự câu hỏi</span>
+        </label>
+    </div>`;
+      }
+
+      // Nút chính: học các câu mới trong mục đã chọn. Hết câu mới thì cho làm lại tất cả.
+      function renderStartBar() {
+        const inScope = questionsInCategories(getSelectedCategories());
+        const newCount = getStudyList("new").length;
+        let hint = "";
+        let button;
+        if (!inScope.length) {
+          hint = validQuestions.length
+            ? "Hãy chọn ít nhất một mục."
+            : "Chưa có câu hỏi nào. Hãy thêm câu hỏi vào mảng questions.";
+          button = `<button type="button" class="btn btn-primary btn-block" disabled>▶ Bắt đầu</button>`;
+        } else if (newCount) {
+          button = `<button type="button" class="btn btn-primary btn-block" data-action="start" data-mode="new">▶ Bắt đầu</button>`;
+        } else {
+          hint = "🎉 Đã làm hết câu mới trong các mục đã chọn.";
+          button = `<button type="button" class="btn btn-primary btn-block" data-action="start" data-mode="all">🔁 Làm lại tất cả</button>`;
+        }
+        return `<div class="start-bar">
+        ${hint ? `<p class="small muted" style="text-align:center">${hint}</p>` : ""}
+        ${button}
+    </div>`;
+      }
+
+      function renderReviewCard() {
+        const buttons = REVIEW_MODE_KEYS.map((key) => {
+          const count = getStudyList(key).length;
+          return `<button type="button" class="btn review-btn" data-action="start" data-mode="${key}" ${count ? "" : "disabled"}>
+            <span>${STUDY_MODES[key].label}</span><span class="review-count">${count}</span>
+        </button>`;
+        }).join("");
+        return `<div class="card">
+        <h2>Ôn lại</h2>
+        <p class="small muted">Chỉ lấy câu trong các mục đã chọn.</p>
+        <div class="review-grid">${buttons}</div>
+    </div>`;
+      }
+
+      function renderProgressCard() {
+        const stats = computeStats(validQuestions);
+        const pct = (n) =>
+          stats.total ? ((n / stats.total) * 100).toFixed(1) : 0;
+        return `<div class="card">
+        <div class="progress-head">
+            <h2 style="margin:0">Tổng quan</h2>
+            <strong>${stats.learned} / ${stats.total} đã thuộc</strong>
+        </div>
+        <div class="bar" aria-hidden="true">
+            <div class="bar-learned" style="width:${pct(stats.learned)}%"></div>
+            <div class="bar-unsure" style="width:${pct(stats.unsure)}%"></div>
+            <div class="bar-wrong" style="width:${pct(stats.wrong)}%"></div>
+        </div>
+        <div class="bar-legend">
+            <span><i style="background:var(--ok)"></i>Đã thuộc</span>
+            <span><i style="background:var(--warn)"></i>Mập mờ</span>
+            <span><i style="background:var(--bad)"></i>Làm sai</span>
+        </div>
+        <div class="stats-grid">
+            ${statHtml(stats.not_started, "Chưa học")}
+            ${statHtml(stats.learned, "Đã thuộc", "ok")}
+            ${statHtml(stats.unsure, "Mập mờ", "warn")}
+            ${statHtml(stats.wrong, "Làm sai", "bad")}
+            ${statHtml(stats.favorite, "Yêu thích", "fav")}
+            ${statHtml(stats.accuracy === null ? "—" : stats.accuracy + "%", "Chính xác")}
+        </div>
+    </div>`;
+      }
+
+      function renderDataCard() {
+        return `<div class="card">
+        <h2>Dữ liệu</h2>
+        <p class="small muted">Tiến độ được tự động lưu trong trình duyệt này.</p>
+        <button type="button" class="btn btn-danger-outline btn-block" data-action="reset">Reset Progress</button>
+    </div>`;
+      }
+
+      function renderHome() {
+        document.getElementById("screen-home").innerHTML = `
+        <header class="app-header">
+            <h1>AZ-104 Study</h1>
+            <span class="small muted">${validQuestions.length} câu hỏi</span>
+        </header>
+        ${renderWarnings()}
+        ${renderResumeCard()}
+        ${renderCategoryCard()}
+        ${renderStartBar()}
+        ${renderReviewCard()}
+        ${renderProgressCard()}
+        ${renderDataCard()}`;
+      }
+
+      // Văn bản trong dữ liệu câu hỏi: bỏ khoảng trắng đầu/cuối, hỗ trợ **chữ đậm**.
+      // Xuống dòng được giữ nhờ class "pre" (white-space: pre-line).
+      function formatText(text) {
+        return escapeHtml(String(text ?? "").trim()).replace(
+          /\*\*(.+?)\*\*/g,
+          "<strong>$1</strong>",
+        );
+      }
+
+      // Bản dịch của một lựa chọn; bỏ qua nếu giống hệt bản gốc (ví dụ tên lệnh, tên dịch vụ).
+      function getChoiceVi(part, index) {
+        const vi = part.choicesVi && part.choicesVi[index];
+        if (!vi || String(vi).trim() === String(part.choices[index]).trim())
+          return "";
+        return vi;
+      }
+
+      // Dòng dịch nhỏ dưới đáp án, chỉ hiện khi đang bật "Xem tiếng Việt".
+      function renderChoiceVi(part, index) {
+        const vi = viOpen ? getChoiceVi(part, index) : "";
+        return vi ? `<span class="choice-vi">${formatText(vi)}</span>` : "";
+      }
+
+      function renderPartChoices(part, partIndex, shown, answered) {
+        const correct = getCorrectAnswers(part);
+        const multi = correct.length > 1;
+        return part.choices
+          .map((text, i) => {
+            const classes = ["choice"];
+            if (multi) classes.push("multi");
+            let mark = LETTERS[i];
+            if (answered) {
+              if (correct.includes(i)) {
+                classes.push("correct");
+                mark = "✓";
+              } else if (shown.includes(i)) {
+                classes.push("incorrect");
+                mark = "✗";
+              }
+            } else if (shown.includes(i)) {
+              classes.push("selected");
+            }
+            return `<button type="button" class="${classes.join(" ")}" data-action="choose" data-part="${partIndex}" data-index="${i}"
+            aria-pressed="${shown.includes(i)}" ${answered ? 'aria-disabled="true"' : ""}>
+            <span class="letter">${mark}</span>
+            <span class="choice-body">
+                <span class="choice-text">${formatText(text)}</span>
+                ${renderChoiceVi(part, i)}
+            </span>
+        </button>`;
+          })
+          .join("");
+      }
+
+      function renderParts(q, answer) {
+        const parts = getParts(q);
+        const selections = answer
+          ? getAnswerSelections(answer)
+          : selectedChoices;
+        return parts
+          .map((part, pi) => {
+            const shown = selections[pi] || [];
+            const label = getPartLabel(parts, pi);
+            const correctCount = getCorrectAnswers(part).length;
+            const pill =
+              correctCount > 1
+                ? `<span class="pill multi">Chọn ${correctCount} đáp án</span>`
+                : "";
+            const header =
+              label || pill
+                ? `<div class="part-label">${label ? escapeHtml(label) : ""}${pill}</div>`
+                : "";
+            return `<div class="part">${header}${renderPartChoices(part, pi, shown, Boolean(answer))}</div>`;
+          })
+          .join("");
+      }
+
+      // Ảnh minh họa của đề. Ảnh không tải được (sai đường dẫn, đang offline) thì hiện thông báo thay vì ảnh vỡ.
+      function renderImages(q) {
+        return getImages(q)
+          .map(
+            (src) => `<figure class="q-image">
+            <img src="${escapeHtml(src)}" alt="Hình minh họa" loading="lazy"
+                onerror="this.parentNode.classList.add('broken')">
+        </figure>`,
+          )
+          .join("");
+      }
+
+      function hasVietnamese(q) {
+        return (
+          Boolean(q.questionVi) ||
+          getParts(q).some((part) =>
+            part.choices.some((_, i) => getChoiceVi(part, i)),
+          )
+        );
+      }
+
+      // Nút bật/tắt tiếng Việt, mặc định tắt. Khi bật: hiện bản dịch đề bài ở đây,
+      // và bản dịch từng đáp án ngay dưới đáp án đó.
+      function renderViBox(q) {
+        if (!hasVietnamese(q)) return "";
+        return `<div class="vi-box ${viOpen ? "open" : ""}">
+            <button type="button" class="vi-toggle" data-action="toggle-vi" aria-expanded="${viOpen}">
+                🇻🇳 ${viOpen ? "Ẩn tiếng Việt" : "Xem tiếng Việt"}
+            </button>
+            ${viOpen && q.questionVi ? `<div class="pre">${formatText(q.questionVi)}</div>` : ""}
+        </div>`;
+      }
+
+      function renderResultBox(q, answer) {
+        if (!answer.correct) {
+          const parts = getParts(q);
+          const selections = getAnswerSelections(answer);
+          const correctList = parts
+            .map((part, pi) => {
+              const label = getPartLabel(parts, pi);
+              const choices = getCorrectAnswers(part)
+                .map((i) => {
+                  const vi = viOpen ? getChoiceVi(part, i) : "";
+                  return `<strong>${LETTERS[i]}.</strong> ${formatText(part.choices[i])}${vi ? `<span class="choice-vi">${formatText(vi)}</span>` : ""}`;
+                })
+                .join(", ");
+              const mark =
+                parts.length > 1
+                  ? isPartCorrect(part, selections[pi])
+                    ? " ✅"
+                    : " ❌"
+                  : "";
+              const shortLabel = label.replace(/[。.．]\s*$/, "");
+              return `<li>${shortLabel ? `${escapeHtml(shortLabel)}: ` : ""}${choices}${mark}</li>`;
+            })
+            .join("");
+          return `<div class="feedback bad" id="feedback">
+               <div class="feedback-title">❌ Incorrect</div>
+               <div>Correct answer:</div><ul>${correctList}</ul>
+           </div>`;
+        }
+        let note;
+        if (needsRating(answer))
+          note = "Bạn chắc chắn hay còn mập mờ? Chọn ở nút bên dưới.";
+        else if (answer.confidence === CONFIDENCE.UNSURE)
+          note = "Bạn đã đánh dấu: 🤔 Mập mờ";
+        else note = "Bạn đã đánh dấu: Chắc chắn";
+        return `<div class="feedback ok" id="feedback">
+            <div class="feedback-title">✅ Correct</div>
+            <div class="small">${note}</div>
+        </div>`;
+      }
+
+      function renderFeedback(q, answer) {
+        if (!answer) return "";
+        const p = getProgress(q.id);
+        return `${renderResultBox(q, answer)}
+        ${q.explanation ? `<div class="card"><h3>📝 Phân tích & giải thích</h3><div class="pre">${formatText(q.explanation)}</div></div>` : ""}
+        ${q.knowledge ? `<div class="card knowledge"><h3>📘 Kiến thức cần nhớ</h3><div class="pre">${formatText(q.knowledge)}</div></div>` : ""}
+        <p class="small muted">Câu này: đã làm ${p.attempts} lần · đúng ${p.correctCount} (mập mờ ${p.unsureCount}) · sai ${p.wrongCount}</p>`;
+      }
+
+      function renderActionBar(q, answer, isLast, isFirst) {
+        const prev = `<button type="button" class="btn" data-action="prev" ${isFirst ? "disabled" : ""} aria-label="Câu trước">‹</button>`;
+        if (!answer) {
+          return `<div class="action-bar">${prev}
+            <button type="button" class="btn btn-primary" data-action="check" ${isSelectionComplete(q) ? "" : "disabled"}>Check Answer</button>
+        </div>`;
+        }
+        if (needsRating(answer)) {
+          return `<div class="action-bar rating">${prev}
+            <button type="button" class="btn btn-warn" data-action="rate" data-confidence="${CONFIDENCE.UNSURE}">🤔 Mập mờ</button>
+            <button type="button" class="btn btn-ok" data-action="rate" data-confidence="${CONFIDENCE.SURE}">✅ Chắc chắn</button>
+        </div>`;
+        }
+        return `<div class="action-bar">${prev}
+            <button type="button" class="btn btn-primary" data-action="next">${isLast ? "Xem kết quả" : "Next Question ›"}</button>
+        </div>`;
+      }
+
+      function renderQuiz() {
+        const s = state.session;
+        const q = currentQuestion();
+        if (!q) {
+          route();
+          return;
+        }
+
+        const answer = currentAnswer();
+        const p = getProgress(q.id);
+        const r = getSessionResults();
+
+        document.getElementById("screen-quiz").innerHTML = `
+        <div class="quiz-top">
+            <button type="button" class="icon-btn" data-action="home" aria-label="Về trang chủ">⌂</button>
+            <div class="quiz-title">Question ${s.index + 1} / ${s.ids.length}<small>${escapeHtml(s.label)}</small></div>
+            <button type="button" class="icon-btn ${p.favorite ? "fav-on" : ""}" data-action="favorite"
+                aria-label="Yêu thích" aria-pressed="${p.favorite}">${p.favorite ? "★" : "☆"}</button>
+        </div>
+        <div class="thin-bar"><div style="width:${(r.answered / s.ids.length) * 100}%"></div></div>
+        <div class="tally">
+            <span class="ok">✅ ${r.sure} chắc</span>
+            <span class="warn">🤔 ${r.unsure} mập mờ</span>
+            <span class="bad">❌ ${r.wrong} sai</span>
+        </div>
+        <div class="meta">
+            <span class="pill">${escapeHtml(getCategory(q))}</span>
+            ${q.topic ? `<span class="pill">${escapeHtml(q.topic)}</span>` : ""}
+            <span class="pill level">${LEVELS[getLevel(q)]}</span>
+            <span class="pill ${p.status}">${STATUS_LABELS[p.status]}</span>
+            <span class="pill">#${escapeHtml(q.id)}</span>
+        </div>
+        <div class="q-text pre" lang="ja">${formatText(q.question)}</div>
+        ${renderImages(q)}
+        ${renderViBox(q)}
+        ${renderParts(q, answer)}
+        ${renderFeedback(q, answer)}
+        ${renderActionBar(q, answer, s.index === s.ids.length - 1, s.index === 0)}`;
+      }
+
+      function renderDone() {
+        const s = state.session;
+        const r = getSessionResults();
+        const skipped = s.ids.length - r.answered;
+        const reviewCount = r.reviewIds.length;
+        document.getElementById("screen-done").innerHTML = `
+        <header class="app-header"><h1>Kết quả</h1></header>
+        <div class="card">
+            <p class="small muted" style="text-align:center">${escapeHtml(s.label)}</p>
+            <div class="done-score">${r.sure + r.unsure} / ${r.answered}</div>
+            <div class="done-sub">câu trả lời đúng${skipped ? ` · ${skipped} câu bỏ qua` : ""}</div>
+            <div class="stats-grid" style="margin-bottom:16px">
+                ${statHtml(r.sure, "Chắc chắn", "ok")}
+                ${statHtml(r.unsure, "Mập mờ", "warn")}
+                ${statHtml(r.wrong, "Sai", "bad")}
+            </div>
+            <div class="stack">
+                ${reviewCount ? `<button type="button" class="btn btn-primary" data-action="retry-weak">Ôn lại ${reviewCount} câu sai & mập mờ</button>` : ""}
+                <button type="button" class="btn" data-action="restart">Làm lại lượt này</button>
+                <button type="button" class="btn" data-action="finish">Về trang chủ</button>
+            </div>
+        </div>`;
+      }
+
+      // ====================
+      // Modal & Toast
+      // ====================
+      function showConfirm({
+        title,
+        message,
+        confirmLabel = "OK",
+        danger = false,
+        hideCancel = false,
+      }) {
+        const modal = document.getElementById("modal");
+        const okBtn = document.getElementById("modal-ok");
+        const cancelBtn = document.getElementById("modal-cancel");
+        document.getElementById("modal-title").textContent = title;
+        document.getElementById("modal-message").textContent = message;
+        okBtn.textContent = confirmLabel;
+        okBtn.className = "btn " + (danger ? "btn-danger" : "btn-primary");
+        cancelBtn.hidden = hideCancel;
+        modal.querySelector(".modal-actions").style.gridTemplateColumns =
+          hideCancel ? "1fr" : "";
+        modal.hidden = false;
+        (hideCancel ? okBtn : cancelBtn).focus();
+
+        return new Promise((resolve) => {
+          const close = (result) => {
+            modal.hidden = true;
+            okBtn.onclick = cancelBtn.onclick = modal.onclick = null;
+            document.removeEventListener("keydown", onKey);
+            resolve(result);
+          };
+          const onKey = (e) => {
+            if (e.key === "Escape") close(false);
+          };
+          okBtn.onclick = () => close(true);
+          cancelBtn.onclick = () => close(false);
+          modal.onclick = (e) => {
+            if (e.target === modal) close(false);
+          };
+          document.addEventListener("keydown", onKey);
+        });
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.hidden = true;
+        }, 2500);
+      }
+
+      // ====================
+      // Event Handlers
+      // ====================
+      async function handleReset() {
+        const ok = await showConfirm({
+          title: "Reset Progress",
+          message:
+            "Bạn có chắc muốn xóa toàn bộ tiến độ?\nHành động này không thể hoàn tác.",
+          confirmLabel: "Reset",
+          danger: true,
+        });
+        if (!ok) return;
+        state.progress = {};
+        state.session = null;
+        resetQuestionUi();
+        saveState();
+        renderHome();
+        showToast("Đã xóa toàn bộ tiến độ");
+      }
+
+      const actions = {
+        start: (el) => startStudy(el.dataset.mode),
+        resume: () => {
+          resetQuestionUi();
+          openQuizScreen();
+        },
+        reset: () => handleReset(),
+        home: () => goHome(),
+        favorite: () => {
+          const q = currentQuestion();
+          if (q) {
+            toggleFavorite(q.id);
+            renderQuiz();
+          }
+        },
+        choose: (el) =>
+          selectChoice(Number(el.dataset.part), Number(el.dataset.index)),
+        "toggle-vi": () => {
+          viOpen = !viOpen;
+          renderQuiz();
+        },
+        check: () => checkAnswer(),
+        rate: (el) => goNext(el.dataset.confidence),
+        next: () => goNext(),
+        prev: () => goToQuestion(state.session.index - 1),
+        "retry-weak": () =>
+          startSession(
+            getSessionResults().reviewIds,
+            "Ôn lại câu sai & mập mờ",
+          ),
+        restart: () => {
+          const s = state.session;
+          startSession(s.ids, s.label);
+        },
+        finish: () => {
+          endSession();
+          goHome();
+        },
+      };
+
+      function handleClick(e) {
+        const el = e.target.closest("[data-action]");
+        if (!el || el.disabled) return;
+        const action = actions[el.dataset.action];
+        if (action) action(el);
+      }
+
+      function handleChange(e) {
+        const target = e.target;
+        if (target.id === "category-all") {
+          toggleAllCategories();
+          renderHome();
+        } else if (target.dataset.category !== undefined) {
+          toggleCategory(target.dataset.category);
+          renderHome();
+        } else if (target.id === "shuffle-toggle") {
+          updateSettings({ shuffle: target.checked });
+        }
+      }
+
+      // Phím tắt khi dùng máy tính:
+      //   1-9 / A-J chọn đáp án (chỉ với câu 1 phần), Enter kiểm tra / câu tiếp,
+      //   sau khi đúng: S = chắc chắn, M = mập mờ; ← → chuyển câu; V = bật/tắt tiếng Việt.
+      function handleKeydown(e) {
+        if (
+          document.getElementById("screen-quiz").hidden ||
+          !document.getElementById("modal").hidden
+        )
+          return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const key = e.key.toUpperCase();
+        const answer = currentAnswer();
+        const q = currentQuestion();
+        const singlePart = q && getParts(q).length === 1;
+        if (needsRating(answer) && (key === "S" || key === "M")) {
+          goNext(key === "M" ? CONFIDENCE.UNSURE : CONFIDENCE.SURE);
+        } else if (key === "V" && q && hasVietnamese(q)) {
+          actions["toggle-vi"]();
+        } else if (singlePart && /^[1-9]$/.test(key))
+          selectChoice(0, Number(key) - 1);
+        else if (singlePart && key.length === 1 && LETTERS.includes(key))
+          selectChoice(0, LETTERS.indexOf(key));
+        else if (key === "ENTER") {
+          e.preventDefault();
+          answer ? goNext() : checkAnswer();
+        } else if (key === "ARROWRIGHT" && answer) goNext();
+        else if (key === "ARROWLEFT" && state.session.index > 0) actions.prev();
+      }
+
+      // ====================
+      // Init
+      // ====================
+      function init() {
+        prepareQuestions();
+        state = loadState();
+        cleanSession();
+
+        // Reload khi đang ở #quiz: tạo lại một mục lịch sử phía sau để nút Back vẫn về trang chủ.
+        const base = location.pathname + location.search;
+        if (location.hash === "#quiz" && state.session) {
+          history.replaceState(null, "", base);
+          history.pushState(null, "", base + "#quiz");
+        } else if (location.hash) {
+          history.replaceState(null, "", base);
+        }
+
+        document.addEventListener("click", handleClick);
+        document.addEventListener("change", handleChange);
+        document.addEventListener("keydown", handleKeydown);
+        window.addEventListener("hashchange", () => {
+          resetQuestionUi();
+          route();
+          window.scrollTo(0, 0);
+        });
+
+        route();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
